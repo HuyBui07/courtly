@@ -1,0 +1,11 @@
+{
+  "signin": {
+    "title": "Đăng nhập",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "submit": "Đăng nhập",
+    "forgot": "Quên mật khẩu?",
+    "register": "Đăng ký",
+    "error": "Email hoặc mật khẩu không đúng"
+  }
+}

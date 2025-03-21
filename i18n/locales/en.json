@@ -1,0 +1,11 @@
+{
+  "signin": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "forgot": "Forgot Password?",
+    "register": "Register",
+    "error": "Invalid email or password"
+  }
+}
