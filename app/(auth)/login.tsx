@@ -3,7 +3,6 @@ import { Text, TextInput, useTheme, Button } from "react-native-paper";
 
 import { useState } from "react";
 import { Link } from "expo-router";
-import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 const Login = () => {
   const theme = useTheme();
@@ -61,7 +60,7 @@ const Login = () => {
         left={<TextInput.Icon icon="lock" />}
       />
 
-      <Button mode="contained" style={{ marginTop: 32 }} onPress={() => {}}>
+      <Button mode="contained" style={{ marginTop: 40 }} onPress={() => {}}>
         <Text
           variant="bodyLarge"
           style={{
