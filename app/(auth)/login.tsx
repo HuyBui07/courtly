@@ -3,7 +3,6 @@ import { Text, TextInput, useTheme, Button } from "react-native-paper";
 
 import { useState } from "react";
 import { Link } from "expo-router";
-import { white } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 
 const Login = () => {
   const theme = useTheme();
@@ -73,7 +72,7 @@ const Login = () => {
         </Text>
       </Button>
       
-      <Text style={{ alignSelf: "center", position: "absolute", bottom: 16 }}>
+      <Text style={{ alignSelf: "center", position: "absolute", bottom: 48 }}>
         Don't have an account?{" "}
         <Link
           href="/(auth)/signup"
