@@ -33,6 +33,12 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "react-native-iap",
+        {
+          "paymentProvider": "both"
+        }
       ]
     ],
     "experiments": {

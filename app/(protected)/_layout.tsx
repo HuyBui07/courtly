@@ -1,6 +1,9 @@
 import { Tabs } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
+import React from "react";
+import { StyleSheet } from "react-native";
+import { colors } from "../../libs/design-system/colors";
+import { View } from "react-native";
 
 export default function RootLayout() {
   return (
@@ -8,7 +11,22 @@ export default function RootLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarActiveTintColor: useTheme().colors.primary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarItemStyle: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        tabBarStyle: {
+          position: "absolute",
+          height:60,
+          marginBottom: 10,
+          marginHorizontal: 10,
+          borderRadius: 50,
+          elevation: 0,
+          borderStyle: "solid",
+          borderWidth: 1,
+        }
       }}
     >
       <Tabs.Screen
@@ -16,6 +34,22 @@ export default function RootLayout() {
         options={{
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="home" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="tournament"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="trophy" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="shop"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="shopping-cart" color={color} />
           ),
         }}
       />
@@ -30,3 +64,12 @@ export default function RootLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

@@ -1,7 +1,10 @@
 import { View, ImageBackground } from "react-native";
-import { TextInput, Text } from "react-native-paper";
+import { TextInput, Text, FAB } from "react-native-paper";
 import React from "react";
-import { useTheme } from "react-native-paper";
+
+// components
+import CourtView from "@/components/CourtView";
+import { colors } from "@/libs/design-system/colors";
 
 const Home = () => {
   return (
@@ -42,7 +45,31 @@ const Home = () => {
             right={<TextInput.Icon icon="magnify" color="rgba(0,0,0,0.3)" />}
           />
         </ImageBackground>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginHorizontal: 16,
+            marginTop: 16,
+          }}
+        >
+          <CourtView />
+        </View>
       </View>
+
+      <FAB
+        variant="primary"
+        mode="flat"
+        style={{
+          position: "absolute",
+          right: 16,
+          bottom: 88,
+          backgroundColor: colors.primary,
+        }}
+        label="Đặt sân"
+        color="white"
+      />
     </View>
   );
 };
