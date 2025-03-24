@@ -2,13 +2,18 @@ import { View } from "react-native";
 import { Text, TextInput, useTheme, Button } from "react-native-paper";
 
 import { useState } from "react";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 const Login = () => {
   const theme = useTheme();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
+    router.dismissAll();
+    router.replace("/(protected)/home");
+  };
 
   return (
     <View
@@ -60,7 +65,7 @@ const Login = () => {
         left={<TextInput.Icon icon="lock" />}
       />
 
-      <Button mode="contained" style={{ marginTop: 40 }} onPress={() => {}}>
+      <Button mode="contained" style={{ marginTop: 40 }} onPress={handleLogin}>
         <Text
           variant="bodyLarge"
           style={{
@@ -72,7 +77,7 @@ const Login = () => {
         </Text>
       </Button>
       
-      <Text style={{ alignSelf: "center", position: "absolute", bottom: 16 }}>
+      <Text style={{ alignSelf: "center", marginTop: 24}}>
         Don't have an account?{" "}
         <Link
           href="/(auth)/signup"
