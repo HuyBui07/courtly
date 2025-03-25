@@ -2,8 +2,7 @@ import { Tabs } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet } from "react-native";
-import { colors } from "../../libs/design-system/colors";
-import { View } from "react-native";
+import { colors } from "../../libs/commons/design-system/colors";
 
 export default function RootLayout() {
   return (
@@ -19,14 +18,14 @@ export default function RootLayout() {
         },
         tabBarStyle: {
           position: "absolute",
-          height:60,
+          height: 60,
           marginBottom: 10,
           marginHorizontal: 10,
           borderRadius: 50,
           elevation: 0,
           borderStyle: "solid",
           borderWidth: 1,
-        }
+        },
       }}
     >
       <Tabs.Screen
@@ -38,18 +37,27 @@ export default function RootLayout() {
         }}
       />
       <Tabs.Screen
-        name="tournament"
+        name="booking"
         options={{
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="trophy" color={color} />
+            <FontAwesome size={28} name="calendar" color={color} />
           ),
         }}
       />
+
       <Tabs.Screen
         name="shop"
         options={{
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="shopping-cart" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="friends"
+        options={{
+          tabBarIcon: ({ color }) => (
+            <FontAwesome size={28} name="group" color={color} />
           ),
         }}
       />

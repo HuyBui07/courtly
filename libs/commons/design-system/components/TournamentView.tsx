@@ -1,5 +1,5 @@
 // design system
-import {styles} from "@/libs/design-system/styles";
+import {styles} from "@/libs/commons/design-system/styles";
 
 import { View, Text } from "react-native";
 

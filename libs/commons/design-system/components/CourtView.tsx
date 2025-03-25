@@ -1,9 +1,6 @@
 import { View } from "react-native";
 import { Text } from "react-native-paper";
 
-// design system
-import { textVariants } from "@/libs/design-system/text-variants";
-
 const InformationLine = ({
   title,
   value,
@@ -29,14 +26,14 @@ const CourtView = () => {
   return (
     <View
       style={{
-        flex: 1,
+        height: "auto",
+        flexDirection: "column",
         width: "100%",
         backgroundColor: "white",
         borderRadius: 10,
         borderColor: "rgba(0,0,0,0.1)",
         borderWidth: 1,
         padding: 12,
-        marginTop: 16,
       }}
     >
       <InformationLine title="Court" value="Court 1" />

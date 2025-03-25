@@ -1,76 +1,127 @@
-import { View, ImageBackground } from "react-native";
-import { TextInput, Text, FAB } from "react-native-paper";
-import React from "react";
-
 // components
-import CourtView from "@/components/CourtView";
-import { colors } from "@/libs/design-system/colors";
+import { View, ImageBackground, ScrollView } from "react-native";
+import { Text } from "react-native-paper";
+import CourtView from "@/libs/commons/design-system/components/CourtView";
+import TournamentView from "@/libs/commons/design-system/components/TournamentView";
+import Banner from "@/libs/commons/design-system/components/Banner";
 
+// design system
+import { colors } from "@/libs/commons/design-system/colors";
+import PickupView from "@/libs/commons/design-system/components/PickupView";
 const Home = () => {
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
-      <View style={{ width: "100%", height: "13%" }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: "white" }}
+      contentContainerStyle={{ paddingBottom: 92 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={{ width: "100%", height: 80}}>
         <ImageBackground
           source={require("../../assets/images/background_header.png")}
           style={{ width: "100%", height: "100%" }}
         >
           <Text
+            variant="bodyLarge"
             style={{
               marginHorizontal: 16,
               marginTop: 16,
               color: "rgba(0,0,0,0.5)",
               fontWeight: "semibold",
-              marginBottom: -4,
             }}
           >
             WELCOME BACK!
           </Text>
 
           <Text
+            variant="bodyMedium"
             style={{
               marginHorizontal: 16,
               fontSize: 16,
-              marginBottom: 16,
               fontWeight: "bold",
             }}
           >
             Gia Huy
           </Text>
-
-          <TextInput
-            mode="outlined"
-            style={{ marginHorizontal: 16, marginTop: "auto", height: 44 }}
-            outlineStyle={{ borderRadius: 10 }}
-            outlineColor="rgba(0,0,0,0.2)"
-            right={<TextInput.Icon icon="magnify" color="rgba(0,0,0,0.3)" />}
-          />
         </ImageBackground>
+      </View>
+
+      <View
+        style={{
+          flexDirection: "column",
+          justifyContent: "space-between",
+          marginHorizontal: 16,
+        }}
+      >
+        <Banner />
+
+        <Text style={{ fontSize: 24, fontWeight: "bold", marginTop: 24, marginBottom: 16 }}>
+          Your Bookings
+        </Text>
+        <CourtView />
 
         <View
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            marginHorizontal: 16,
-            marginTop: 16,
+            alignItems: "center",
+            marginTop: 32,
           }}
         >
-          <CourtView />
-        </View>
-      </View>
+          <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
+            Tournaments
+          </Text>
 
-      <FAB
-        variant="primary"
-        mode="flat"
-        style={{
-          position: "absolute",
-          right: 16,
-          bottom: 88,
-          backgroundColor: colors.primary,
-        }}
-        label="Đặt sân"
-        color="white"
-      />
-    </View>
+          <Text
+            variant="bodyMedium"
+            style={{ color: colors.primary, fontWeight: "bold" }}
+          >
+            Click for all {">>>"}
+          </Text>
+        </View>
+
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 16 }}
+        >
+          <TournamentView />
+          <TournamentView />
+          <TournamentView />
+          <TournamentView />
+        </ScrollView>
+
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 32,
+          }}
+        >
+          <Text variant="titleLarge" style={{ fontWeight: "bold" }}>
+            Pickup Games
+          </Text>
+
+          <Text
+            variant="bodyMedium"
+            style={{ color: colors.primary, fontWeight: "bold" }}
+          >
+            Click for all{">>>"}
+          </Text>
+        </View>
+
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 16 }}
+        >
+          <PickupView />
+          <PickupView />
+          <PickupView />
+          <PickupView />
+        </ScrollView>
+      </View>
+    </ScrollView>
   );
 };
 

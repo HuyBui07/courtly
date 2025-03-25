@@ -11,4 +11,9 @@ export const styles = StyleSheet.create({
     padding: 12,
     marginTop: 16,
   },
+  headerText: {
+    fontSize: 24,
+    marginHorizontal: 16,
+    fontWeight: "bold",
+  },
 });
