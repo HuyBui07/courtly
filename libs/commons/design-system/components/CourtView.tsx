@@ -1,23 +1,29 @@
 import { View } from "react-native";
 import { Text } from "react-native-paper";
+import { colors } from "../colors";
+import { textStyles } from "../styles";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
-const InformationLine = ({
-  title,
-  value,
+const CourtLine = ({
+  court,
+  duration,
 }: {
-  title: String;
-  value: String;
+  court: String;
+  duration: String;
 }) => {
   return (
     <View
       style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginVertical: 8,
+        justifyContent: "center",
+        gap: 8,
       }}
     >
-      <Text variant="bodyMedium">{title}:</Text>
-      <Text variant="bodyMedium">{value}</Text>
+      <Text style={{ ...textStyles.title, fontWeight: "bold" }}>{court}</Text>
+
+      <Text style={{ ...textStyles.body, fontSize: 20 }}>
+        <MaterialCommunityIcons name="timer-sand" size={24} color="black" />{" "}
+        {duration}
+      </Text>
     </View>
   );
 };
@@ -27,18 +33,45 @@ const CourtView = () => {
     <View
       style={{
         height: "auto",
-        flexDirection: "column",
-        width: "100%",
+        flexDirection: "row",
+        width: 300,
         backgroundColor: "white",
         borderRadius: 10,
         borderColor: "rgba(0,0,0,0.1)",
         borderWidth: 1,
         padding: 12,
+        marginTop: 16,
+        elevation: 4,
+        gap: 16,
       }}
     >
-      <InformationLine title="Court" value="Court 1" />
-      <InformationLine title="Time" value="08:00 - 09:00" />
-      <InformationLine title="Date" value="Today" />
+      <View
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: colors.primary,
+          borderRadius: 10,
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingVertical: 24,
+        }}
+      >
+        <Text
+          variant="titleLarge"
+          style={{ ...textStyles.title, color: "white" }}
+        >
+          Mon, 12
+        </Text>
+
+        <Text
+          variant="bodyMedium"
+          style={{ ...textStyles.body, color: "white" }}
+        >
+          10:00 AM
+        </Text>
+      </View>
+
+      <CourtLine court="Court 1" duration="1 hour" />
     </View>
   );
 };

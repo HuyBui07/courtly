@@ -6,17 +6,17 @@ import CourtView from "@/libs/commons/design-system/components/CourtView";
 
 // components
 import { ScrollView, View, ImageBackground } from "react-native";
-import { Text, SegmentedButtons } from "react-native-paper";
+import { Text } from "react-native-paper";
 import { colors } from "@/libs/commons/design-system/colors";
+import Header from "@/libs/home/components/Header";
+import SegmentedButton from "@/libs/my-booking/components/SegmentedButton";
 
 const Booking = () => {
   const [time, setTime] = useState("upcoming");
 
   return (
-    <View
-      style={{ height: "100%", backgroundColor: "white" }}
-    >
-      <View style={{ width: "100%", height: "13%" }}>
+    <View style={{ height: "100%", backgroundColor: "white" }}>
+      {/* <View style={{ width: "100%", height: "13%" }}>
         <ImageBackground
           source={require("../../assets/images/background_header.png")}
           style={{ width: "100%", height: "100%" }}
@@ -31,11 +31,13 @@ const Booking = () => {
             My Bookings
           </Text>
         </ImageBackground>
-      </View>
+      </View> */}
 
       {/* <Text style={styles.headerText}>Lich dat cua toi</Text> */}
 
-      <SegmentedButtons
+      <Header headTitle="My Bookings" />
+
+      {/* <SegmentedButtons
         value={time}
         onValueChange={setTime}
         buttons={[
@@ -55,8 +57,10 @@ const Booking = () => {
           },
         ]}
         theme={{ colors: { secondaryContainer: colors.primary } }}
-        style={{ marginHorizontal: 16, marginVertical: 16 }}
-      />
+        style={{ marginHorizontal: 16, marginVertical: 16}}
+      /> */}
+      <SegmentedButton />
+
 
       <ScrollView
         style={{ width: "100%", padding: 16 }}

@@ -5,10 +5,9 @@ export const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     backgroundColor: "white",
-    borderRadius: 10,
+    borderRadius: 24,
     borderColor: "rgba(0,0,0,0.1)",
     borderWidth: 1,
-    padding: 12,
     marginTop: 16,
   },
   headerText: {
@@ -17,3 +16,5 @@ export const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+export * from "./TextStyle"

@@ -14,7 +14,7 @@ export default function RootLayout() {
         tabBarItemStyle: {
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "center"
         },
         tabBarStyle: {
           position: "absolute",
@@ -22,7 +22,7 @@ export default function RootLayout() {
           marginBottom: 10,
           marginHorizontal: 10,
           borderRadius: 50,
-          elevation: 0,
+          elevation: 2,
           borderStyle: "solid",
           borderWidth: 1,
         },
@@ -45,14 +45,14 @@ export default function RootLayout() {
         }}
       />
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="shop"
         options={{
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="shopping-cart" color={color} />
           ),
         }}
-      />
+      /> */}
       <Tabs.Screen
         name="friends"
         options={{
