@@ -13,7 +13,7 @@ const PickupSection = () => {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          marginTop: 32,
+          marginTop: 48,
           paddingHorizontal: 12,
         }}
       >

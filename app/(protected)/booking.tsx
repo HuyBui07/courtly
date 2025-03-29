@@ -62,7 +62,7 @@ const Booking = () => {
       <SegmentedButton />
 
 
-      <ScrollView
+      {/* <ScrollView
         style={{ width: "100%", padding: 16 }}
         contentContainerStyle={{ paddingBottom: 104, gap: 16 }}
         showsVerticalScrollIndicator={false}
@@ -74,7 +74,7 @@ const Booking = () => {
         <CourtView />
         <CourtView />
         <CourtView />
-      </ScrollView>
+      </ScrollView> */}
     </View>
   );
 };
