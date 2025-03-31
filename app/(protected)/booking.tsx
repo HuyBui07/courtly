@@ -67,13 +67,13 @@ const Booking = () => {
         contentContainerStyle={{ paddingBottom: 104, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <CourtView image={require("../../assets/images/banner.png")} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
-        <CourtView image={undefined} name={""} location={""} date={""} time={""} slots={0} />
+        <CourtView />
+        <CourtView />
+        <CourtView />
+        <CourtView />
+        <CourtView />
+        <CourtView />
+        <CourtView />
       </ScrollView>
     </View>
   );
