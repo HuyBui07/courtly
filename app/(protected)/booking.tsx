@@ -10,6 +10,7 @@ import { Text } from "react-native-paper";
 import { colors } from "@/libs/commons/design-system/colors";
 import Header from "@/libs/home/components/Header";
 import SegmentedButton from "@/libs/my-booking/components/SegmentedButton";
+import CalendarComponent from "@/libs/my-booking/components/CalendarComponent";
 
 const Booking = () => {
   const [time, setTime] = useState("upcoming");
@@ -62,19 +63,14 @@ const Booking = () => {
       <SegmentedButton />
 
 
-      {/* <ScrollView
+      <ScrollView
         style={{ width: "100%", padding: 16 }}
-        contentContainerStyle={{ paddingBottom: 104, gap: 16 }}
+        contentContainerStyle={{ gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <CourtView />
-        <CourtView />
-        <CourtView />
-        <CourtView />
-        <CourtView />
-        <CourtView />
-        <CourtView />
-      </ScrollView> */}
+        <CalendarComponent  />
+        <CalendarComponent  />
+      </ScrollView>
     </View>
   );
 };
