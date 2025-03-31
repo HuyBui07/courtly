@@ -4,7 +4,7 @@ import { View, Text, Image } from "react-native";
 
 const Banner = () => {
   return (
-    <View style={{ width: "100%", height: 120, paddingHorizontal: 12, marginTop: 16 }}>
+    <View style={{ width: "100%", height: 120, paddingHorizontal: 12, marginTop: 32 }}>
       <Image
         style={{ width: "100%", height: "100%", borderRadius: 10 }}
         source={require("../../../assets/images/banner.png")}

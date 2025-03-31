@@ -15,13 +15,15 @@ const CourtLine = ({
     <View
       style={{
         justifyContent: "center",
-        gap: 8,
+        gap: 16
       }}
     >
-      <Text style={{ ...textStyles.title, fontWeight: "bold" }}>{court}</Text>
+      <Text style={{ ...textStyles.body, fontSize: 20, fontWeight: "bold" }}>
+        {court}
+      </Text>
 
-      <Text style={{ ...textStyles.body, fontSize: 20 }}>
-        <MaterialCommunityIcons name="timer-sand" size={24} color="black" />{" "}
+      <Text style={{ ...textStyles.body }}>
+        <MaterialCommunityIcons name="timer-sand" size={20} color="black" />{" "}
         {duration}
       </Text>
     </View>
@@ -42,7 +44,7 @@ const CourtView = () => {
         padding: 12,
         marginTop: 16,
         elevation: 4,
-        gap: 16,
+        gap: 24,
       }}
     >
       <View

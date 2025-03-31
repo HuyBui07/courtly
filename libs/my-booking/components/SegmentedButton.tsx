@@ -2,37 +2,84 @@ import { useState } from "react";
 
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
-import { View, Text, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  LayoutChangeEvent,
+} from "react-native";
+import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
+import { Avatar } from "react-native-paper";
 
 const SegmentedButton = () => {
-  const [dimensions, setDimensions] = useState({ height: 0, width: 0 });
+  const [selected, setSelected] = useState("upcoming");
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const buttonWidth = dimensions.width / 2;
 
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        height: 80,
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        marginHorizontal: 16,
-        marginTop: 32,
-        paddingHorizontal: 4,
-        gap: 16,
-        borderRadius: 50,
-        elevation: 4,
-        backgroundColor: "white",
-      }}
-    >
-      <View style={styles.button}>
-        <Text style={{ ...textStyles.title, ...styles.text }}>Upcoming</Text>
-      </View>
+  const onButtonLayout = (event: LayoutChangeEvent) => {
+    setDimensions({
+      width: event.nativeEvent.layout.width,
+      height: event.nativeEvent.layout.height,
+    });
+  };
 
-      <View style={styles.button}>
-        <Text style={{ ...textStyles.title, ...styles.text }}>Past</Text>
-      </View>
+  const buttonPositionX = useSharedValue(0);
+
+  const handleClick = () => {
+    setSelected((prev) => (prev === "upcoming" ? "past" : "upcoming"));
+    buttonPositionX.value = withSpring(
+      selected === "upcoming" ? buttonWidth : 0
+    );
+  };
+
+  return (
+    <View onLayout={onButtonLayout} style={styles.container}>
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            width: buttonWidth - 20,
+            height: dimensions.height - 15,
+            marginHorizontal: 10,
+            backgroundColor: colors.primary,
+            borderRadius: 50,
+            zIndex: 0,
+          },
+          {
+            transform: [
+              {
+                translateX: buttonPositionX,
+              },
+            ],
+          },
+        ]}
+      ></Animated.View>
+
+      <TouchableOpacity style={styles.button} onPress={handleClick}>
+        <Text
+          style={[
+            textStyles.title,
+            styles.text,
+            selected === "upcoming" && styles.selected,
+          ]}
+        >
+          Upcoming
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={handleClick}>
+        <Text
+          style={[
+            textStyles.title,
+            styles.text,
+            selected === "past" && styles.selected,
+          ]}
+        >
+          Past
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -40,21 +87,36 @@ const SegmentedButton = () => {
 export default SegmentedButton;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    flexDirection: "row",
+    height: 80,
+    width: "90%",
+    alignItems: "center",
+    marginHorizontal: "auto",
+    marginTop: 32,
+    paddingHorizontal: 4,
+    borderRadius: 50,
+    elevation: 4,
+    backgroundColor: "white",
+  },
 
   button: {
-    width: "45%",
-    height: 60,
-    backgroundColor: colors.primary,
-    padding: 8,
-    borderRadius: 50,
+    width: "50%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
 
   text: {
-    color: "white",
+    color: "black",
+    opacity: 0.2,
     fontWeight: "bold",
     fontSize: 20,
+    zIndex: 1,
+  },
+
+  selected: {
+    color: "white",
+    opacity: 1,
   },
 });
