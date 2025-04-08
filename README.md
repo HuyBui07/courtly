@@ -1,4 +1,4 @@
-# Welcome to your Expo app 👋
+# Welcome to your Expo app 👋 (Front End)
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
@@ -48,3 +48,53 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+# Welcome to your Golang-MF 👋 (Back End)
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+
+## MakeFile
+
+Run build make command with tests
+```bash
+make all
+```
+
+Build the application
+```bash
+make build
+```
+
+Run the application
+```bash
+make run
+```
+Create DB container
+```bash
+make docker-run
+```
+
+Shutdown DB Container
+```bash
+make docker-down
+```
+
+DB Integrations Test:
+```bash
+make itest
+```
+
+Live reload the application:
+```bash
+make watch
+```
+
+Run the test suite:
+```bash
+make test
+```
+
+Clean up binary from the last build:
+```bash
+make clean
+```
