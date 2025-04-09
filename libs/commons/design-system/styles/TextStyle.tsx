@@ -1,11 +1,29 @@
-export const textStyles = {
-    title: {
-        fontSize: 24,
-        fontFamily: "Poppins-Bold",
-    }, 
+import { StyleSheet } from "react-native";
 
-    body: {
-        fontSize: 16,
-        fontFamily: "Poppins-Regular",
-    },
-}
+export const textStyles = StyleSheet.create({
+  title: {
+    fontFamily: "Poppins-Bold",
+  },
+
+  titleSmall: {
+    fontSize: 20,
+    fontFamily: "Poppins-Bold",
+    includeFontPadding: false,
+  },
+
+  body: {
+    fontSize: 14,
+    fontFamily: "Poppins-Regular",
+  },
+
+  bodySmall: {
+    fontSize: 12,
+    fontFamily: "Poppins-Regular",
+    includeFontPadding: false,
+  },
+
+  bodyBold: {
+    fontSize: 14,
+    fontFamily: "Poppins-Bold",
+  },
+});

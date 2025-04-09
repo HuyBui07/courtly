@@ -60,7 +60,7 @@ const SegmentedButton = () => {
       <TouchableOpacity style={styles.button} onPress={handleClick}>
         <Text
           style={[
-            textStyles.title,
+            textStyles.titleSmall,
             styles.text,
             selected === "upcoming" && styles.selected,
           ]}
@@ -72,7 +72,7 @@ const SegmentedButton = () => {
       <TouchableOpacity style={styles.button} onPress={handleClick}>
         <Text
           style={[
-            textStyles.title,
+            textStyles.titleSmall,
             styles.text,
             selected === "past" && styles.selected,
           ]}
@@ -89,7 +89,7 @@ export default SegmentedButton;
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    height: 80,
+    height: 72,
     width: "90%",
     alignItems: "center",
     marginHorizontal: "auto",
@@ -110,8 +110,6 @@ const styles = StyleSheet.create({
   text: {
     color: "black",
     opacity: 0.2,
-    fontWeight: "bold",
-    fontSize: 20,
     zIndex: 1,
   },
 

@@ -1,8 +1,9 @@
 import { Tabs } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Entypo } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../../libs/commons/design-system/colors";
+import Header from "@/libs/commons/design-system/components/Header";
 
 export default function RootLayout() {
   return (
@@ -14,7 +15,7 @@ export default function RootLayout() {
         tabBarItemStyle: {
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "center"
+          justifyContent: "center",
         },
         tabBarStyle: {
           position: "absolute",
@@ -26,6 +27,7 @@ export default function RootLayout() {
           borderStyle: "solid",
           borderWidth: 1,
         },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tabs.Screen
@@ -44,6 +46,7 @@ export default function RootLayout() {
           ),
         }}
       />
+     
 
       {/* <Tabs.Screen
         name="shop"
@@ -54,10 +57,10 @@ export default function RootLayout() {
         }}
       /> */}
       <Tabs.Screen
-        name="friends"
+        name="chat"
         options={{
           tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="group" color={color} />
+            <Entypo name="chat" size={28} color={color} />
           ),
         }}
       />
