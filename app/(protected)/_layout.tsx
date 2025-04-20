@@ -1,11 +1,18 @@
-import { Tabs } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 import { FontAwesome, Entypo } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../../libs/commons/design-system/colors";
-import Header from "@/libs/commons/design-system/components/Header";
+import Header from "@/libs/my-booking/components/Header";
 
 export default function RootLayout() {
+  const segments = useSegments();
+  console.log("segments", segments);
+
+  const hideTabBar = segments.some(
+    (segment) => segment === "book-court" || segment === "check-out"
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -26,6 +33,7 @@ export default function RootLayout() {
           elevation: 2,
           borderStyle: "solid",
           borderWidth: 1,
+          display: hideTabBar ? "none" : "flex",
         },
         tabBarHideOnKeyboard: true,
       }}
@@ -46,7 +54,40 @@ export default function RootLayout() {
           ),
         }}
       />
-     
+
+      {/* <Tabs.Screen
+        name="(booking)/book-court"
+        options={{
+          href: null,
+          headerShown: true,
+          // headerTitle: "Book a Court",
+          // headerTitleStyle: {
+          //   fontFamily: "Poppins-Bold",
+          // },
+          header: (props) => <Header title="Book a Court" />,
+          tabBarStyle: {
+            display: "none",
+          },
+          animation: "shift",
+        }}
+      />
+
+      <Tabs.Screen
+        name="(booking)/check-out"
+        options={{
+          href: null,
+          headerShown: true,
+          // headerTitle: "Book a Court",
+          // headerTitleStyle: {
+          //   fontFamily: "Poppins-Bold",
+          // },
+          header: () => <Header title="Check Out" />,
+          tabBarStyle: {
+            display: "none",
+          },
+          animation: "shift",
+        }}
+      /> */}
 
       {/* <Tabs.Screen
         name="shop"

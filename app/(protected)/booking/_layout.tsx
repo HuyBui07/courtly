@@ -1,38 +1,20 @@
 import { Stack } from "expo-router";
-import React from "react";
-import { colors } from "@/libs/commons/design-system/colors";
-import Header from "@/libs/commons/design-system/components/Header";
-import { textStyles } from "@/libs/commons/design-system/styles";
+import Header from "@/libs/my-booking/components/Header";
 
-export default function BookingLayout() {
+export default function RootLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: colors.primary,
+        header: ({ navigation, route }) => {
+          const title =
+            route.name === "book-court" ? "Book Court" : "Check Out";
+          return <Header navigation={navigation} title={title} />;
         },
-        headerTintColor: "#fff",
-        animation: "fade_from_bottom",
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="book-court"
-        options={{
-          presentation: "modal",
-          headerTitle: "Book a Court",
-          headerTitleStyle: {
-            fontFamily: "Poppins-Bold",
-          },
-          header: () => <Header title="Book a Court" />,
-          animationMatchesGesture: true,
-        }}
-      />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="book-court" />
+      <Stack.Screen name="check-out" />
     </Stack>
   );
 }

@@ -84,7 +84,7 @@ const SignUp = () => {
       <Text style={{ alignSelf: "center", marginTop: 24 }}>
         Already have an account?{" "}
         <Link
-          href="/(auth)/login"
+          href="/(auth)"
           style={{
             color: theme.colors.primary,
             fontWeight: "bold",
