@@ -1,52 +1,74 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Keyboard } from "react-native";
+import { StyleSheet, View, Keyboard, FlatList } from "react-native";
 import { TextInput } from "react-native-paper";
-import { Image } from "expo-image";
 import ChatBubble from "@/libs/chat/components/ChatBubble";
 import DateBreakline from "@/libs/chat/components/DateBreakline";
+import { useChat } from "././../../libs/chat/hooks/useChatMessages";
+import { User } from "@/libs/auth/types";
+
+const conversationId = "test-chat-01"; // Bạn có thể truyền vào prop nếu cần động
 
 const Chat = () => {
-  const [keyboardOffset, setKeyboardOffset] = useState(80); // Default margin
+  const [keyboardOffset, setKeyboardOffset] = useState(80);
+  const [text, setText] = useState("");
+  const { messages, sendMessage } = useChat(conversationId);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      (event) => {
-        setKeyboardOffset(10); // Set margin to keyboard height
-      }
-    );
-
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setKeyboardOffset(80); // Reset margin when the keyboard is hidden
-      }
-    );
+    const showListener = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardOffset(10);
+    });
+    const hideListener = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardOffset(80);
+    });
 
     return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
+      showListener.remove();
+      hideListener.remove();
     };
   }, []);
 
+  const handleSend = async () => {
+    if (!text.trim()) return;
+
+    await sendMessage({
+       text: text.trim(),
+      
+      createdAt: Date.now(),
+      user: {
+        _id: "user-123", // Chắc chắn có trường _id
+        name: "Gia Huy",
+        email: "giahuy@123"
+      },
+      _id: ""
+    });
+    
+    
+    
+    setText("");
+  };
+
   return (
     <View style={styles.container}>
-      <ChatBubble
-        message="hello, ten toi la GIa huy, hahahahahahahahahhahahahahhahahahahahahahakjsdksakdjsakdjkadkjskajkdjsk"
-        avatarUrl="https://gravatar.com/avatar/25b4e345b680031a8c532599f1e9ad23?s=400&d=robohash&r=x"
+      <FlatList
+        data={messages}
+        keyExtractor={(item) => item._id.toString()}
+        renderItem={({ item }) => (
+          <>
+            {/* Nếu muốn có DateBreakline thì xử lý thêm theo ngày ở đây */}
+            <ChatBubble message={item.text} avatarUrl={item.user.avatar} />
+          </>
+        )}
       />
-
-      <ChatBubble message="hello, ten toi la GIa huy, hahahahahahahahahhahahahahhahahahahahahahakjsdksakdjsakdjkadkjskajkdjsk" />
-
-      <DateBreakline date="Monday" />
 
       <TextInput
         mode="outlined"
+        placeholder="Nhập tin nhắn..."
+        value={text}
+        onChangeText={setText}
+        onSubmitEditing={handleSend}
         style={[styles.input, { marginBottom: keyboardOffset }]}
-        right={<TextInput.Icon icon="send" />}
-        outlineStyle={{
-          borderRadius: 50,
-        }}
+        right={<TextInput.Icon icon="send" onPress={handleSend} />}
+        outlineStyle={{ borderRadius: 50 }}
         outlineColor="rgba(0, 0, 0, 0.1)"
       />
     </View>
