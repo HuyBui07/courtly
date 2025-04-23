@@ -7,6 +7,9 @@ import {
 } from "react-native-paper";
 import { useFonts } from "expo-font";
 import AppLoading from "expo-app-loading";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 const fontConfig = {
   fontFamily: "Poppins",
@@ -33,13 +36,15 @@ export default function RootLayout() {
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <View style={{ flex: 1 }}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(protected)" />
-        </Stack>
-      </View>
-    </PaperProvider>
+    <QueryClientProvider client={queryClient}>
+      <PaperProvider theme={theme}>
+        <View style={{ flex: 1 }}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(protected)" />
+          </Stack>
+        </View>
+      </PaperProvider>
+    </QueryClientProvider>
   );
 }

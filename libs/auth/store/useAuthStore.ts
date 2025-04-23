@@ -4,15 +4,15 @@ import { User } from "../types";
 interface AuthState {
   user: User | null;
   token: string | null;
-  login: ({ id, name, email, image, phone, role }: User) => void;
+  login: ({ _id, name, email, avatar, phone, role }: User) => void;
   logout: () => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
-  login: ({ id, name, email, image, phone, role }: User) => {
-    set({ user: { id, name, email, image, phone, role }, token: "123" });
+  login: ({ _id, name, email, avatar, phone, role }: User) => {
+    set({ user: { _id, name, email, avatar, phone, role }, token: "123" });
   },
   logout: () => set({ token: null, user: null }),
 }));

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
@@ -24,12 +24,25 @@ const ProfileScreen = () => {
       <View style={styles.menuContainer}>
         <MenuItem icon="person" label="Account" />
         <MenuItem icon="calendar" label="Your Booking" />
-        <MenuItem icon="money-bill-wave" label="Refunds" iconType="FontAwesome5" />
+        <MenuItem
+          icon="money-bill-wave"
+          label="Refunds"
+          iconType="FontAwesome5"
+        />
         <MenuItem icon="bookmark" label="Favourite Venues" />
-        <MenuItem icon="support-agent" label="Support" iconType="MaterialIcons" />
+        <MenuItem
+          icon="support-agent"
+          label="Support"
+          iconType="MaterialIcons"
+        />
         <MenuItem icon="lock" label="Privacy Policy" />
         <MenuItem icon="shield-checkmark" label="Terms of use" />
-        <MenuItem icon="log-out" label="Logout" color="red" />
+        <MenuItem
+          icon="log-out"
+          label="Logout"
+          color="red"
+          onClick={() => router.dismissTo("/(auth)")}
+        />
       </View>
 
       {/* Bottom Navigation */}
@@ -45,11 +58,22 @@ const ProfileScreen = () => {
 };
 
 // Component hiển thị từng mục menu
-const MenuItem = ({ icon, label, color = "green", iconType = "Ionicons" }) => {
-  const IconComponent = iconType === "FontAwesome5" ? FontAwesome5 : iconType === "MaterialIcons" ? MaterialIcons : Ionicons;
+const MenuItem = ({
+  icon,
+  label,
+  color = "green",
+  iconType = "Ionicons",
+  onClick,
+}) => {
+  const IconComponent =
+    iconType === "FontAwesome5"
+      ? FontAwesome5
+      : iconType === "MaterialIcons"
+      ? MaterialIcons
+      : Ionicons;
 
   return (
-    <TouchableOpacity style={styles.menuItem}>
+    <TouchableOpacity style={styles.menuItem} onPress={onClick}>
       <IconComponent name={icon} size={22} color={color} />
       <Text style={[styles.menuText, { color }]}>{label}</Text>
     </TouchableOpacity>
@@ -61,7 +85,9 @@ const NavItem = ({ icon, label, active = false }) => {
   return (
     <TouchableOpacity style={styles.navItem}>
       <Ionicons name={icon} size={24} color={active ? "green" : "black"} />
-      <Text style={[styles.navText, active && { color: "green" }]}>{label}</Text>
+      <Text style={[styles.navText, active && { color: "green" }]}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 };
