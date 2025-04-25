@@ -1,6 +1,5 @@
 import { View } from "react-native";
 import { Text, TextInput, useTheme, Button } from "react-native-paper";
-import { useState } from "react";
 import { Link, router } from "expo-router";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -53,7 +52,7 @@ const Login = () => {
           fontWeight: "bold",
         }}
       >
-        Login
+        <Link href="/(protected)/home">Login</Link>
       </Text>
 
       <Text

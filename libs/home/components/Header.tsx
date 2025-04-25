@@ -1,7 +1,16 @@
 import { StyleSheet, View } from "react-native";
-import { Text, IconButton, Badge } from "react-native-paper";
-import { colors } from "@/libs/commons/design-system/colors";
+import { Text, Badge } from "react-native-paper";
+import {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSpring,
+} from "react-native-reanimated";
+
 import { textStyles } from "@/libs/commons/design-system/styles";
+import { colors } from "@/libs/commons/design-system/colors";
+import { AnimatedIconButton } from "@/libs/commons/design-system/components/AnimatedComponents";
+import { useEffect } from "react";
 
 const Header = ({
   headTitle,
@@ -10,6 +19,26 @@ const Header = ({
   headTitle: string;
   description?: string;
 }) => {
+  const animatedValue = useSharedValue(5);
+
+  useEffect(() => {
+    animatedValue.value = withRepeat(
+      withSpring(-animatedValue.value),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          rotate: `${animatedValue.value}deg`,
+        },
+      ],
+    };
+  });
+
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "column", justifyContent: "center" }}>
@@ -30,12 +59,19 @@ const Header = ({
       </View>
 
       <View>
-        <IconButton
+        <AnimatedIconButton
           icon="bell"
           iconColor="white"
           size={24}
           onPress={() => console.log("Pressed")}
-          style={{ borderWidth: 1, borderColor: "white", borderRadius: 10 }}
+          style={[
+            animatedStyle,
+            {
+              borderWidth: 1,
+              borderColor: "white",
+              borderRadius: 10,
+            },
+          ]}
         />
         <Badge
           style={{

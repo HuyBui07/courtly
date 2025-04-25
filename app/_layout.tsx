@@ -8,6 +8,9 @@ import {
 import { useFonts } from "expo-font";
 import AppLoading from "expo-app-loading";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { enableLayoutAnimations } from "react-native-reanimated";
+
+enableLayoutAnimations(true);
 
 const queryClient = new QueryClient();
 

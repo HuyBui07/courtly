@@ -3,6 +3,7 @@ import { Text } from "react-native-paper";
 import CourtView from "@/libs/commons/design-system/components/CourtView";
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
+import { Link } from "expo-router";
 
 const YourBookingSection = () => {
   return (
@@ -20,12 +21,14 @@ const YourBookingSection = () => {
           Your Bookings
         </Text>
 
-        <Text
-          variant="bodyMedium"
-          style={{ ...textStyles.body, color: colors.primary }}
-        >
-          Click for all {">>>"}
-        </Text>
+        <Link href="/(protected)/booking">
+          <Text
+            variant="bodyMedium"
+            style={{ ...textStyles.body, color: colors.primary }}
+          >
+            Click for all {">>>"}
+          </Text>
+        </Link>
       </View>
 
       <ScrollView

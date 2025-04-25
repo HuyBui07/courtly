@@ -1,8 +1,16 @@
+import React, { useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Button } from "react-native-paper";
+import Animated, {
+  LinearTransition,
+  StretchInY,
+  StretchOutY,
+} from "react-native-reanimated";
+
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { TouchableRipple } from "react-native-paper";
+import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
 
 const InformationLine = ({
   title,
@@ -18,7 +26,7 @@ const InformationLine = ({
       }}
     >
       <Text style={[textStyles.body, { marginRight: 16 }]}>{title}:</Text>
-      <Text style={{ ...textStyles.bodyBold}}>{value}</Text>
+      <Text style={{ ...textStyles.bodyBold }}>{value}</Text>
     </View>
   );
 };
@@ -57,21 +65,54 @@ const StateText = ({ state }: { state: string }) => {
 };
 
 const CalendarComponent = () => {
-  return (
-    <TouchableRipple
-      onPress={() => console.log("Pressed")}
-      rippleColor="rgba(0, 0, 0, .32)"
-      style={styles.container}
-      borderless
-    >
-      <>
-        <StateText state="Cancelled" />
+  const [isExtended, setIsExtended] = useState(false);
 
-        <InformationLine title="Court" value="Court 1" />
-        <InformationLine title="Date" value="29/03/2025" />
-        <InformationLine title="Time" value="10:00 - 11:00" />
-      </>
-    </TouchableRipple>
+  return (
+    <AnimatedTouchableOpacity
+      layout={LinearTransition.springify()}
+      onPress={() => setIsExtended(!isExtended)}
+      style={styles.container}
+    >
+      <StateText state="Cancelled" />
+
+      <InformationLine title="Court" value="Court 1" />
+      <InformationLine title="Date" value="29/03/2025" />
+      <InformationLine title="Time" value="10:00 - 11:00" />
+
+      {isExtended && (
+        <Animated.View
+          style={{
+            flexDirection: "row",
+            gap: 8,
+            marginVertical: 8,
+            justifyContent: "space-between",
+          }}
+          entering={StretchInY}
+          exiting={StretchOutY}
+        >
+          <Button
+            mode="outlined"
+            labelStyle={{ fontWeight: "bold" }}
+            style={{
+              width: "50%",
+              borderRadius: 12,
+              borderColor: colors.primary,
+            }}
+          >
+            Details
+          </Button>
+          <Button
+            mode="contained"
+            buttonColor="red"
+            textColor="white"
+            labelStyle={{ fontWeight: "bold" }}
+            style={{ width: "50%", borderRadius: 12 }}
+          >
+            Cancell
+          </Button>
+        </Animated.View>
+      )}
+    </AnimatedTouchableOpacity>
   );
 };
 

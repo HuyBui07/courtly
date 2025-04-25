@@ -3,7 +3,6 @@ import { FontAwesome, Entypo } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../../libs/commons/design-system/colors";
-import Header from "@/libs/my-booking/components/Header";
 
 export default function RootLayout() {
   const segments = useSegments();
