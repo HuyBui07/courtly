@@ -19,6 +19,7 @@ func init() {
 
 func main() {
 	routes.AuthRoutes()
+	// routes.CourtRoutes()
 
 	port := "8080"
 	log.Printf("Server is running on port %s...", port)
