@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"back_end/config"
@@ -181,25 +182,36 @@ func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBooking, erro
 	return bookings, nil
 }
 
-func DeleteBookingByID(bookingID string) error {
+
+func DeleteBookingByID(userID string, role string, bookingID string) error {
 	collection := config.GetCollection("CourtBookings")
 
-	objID, err := primitive.ObjectIDFromHex(bookingID)
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
 	if err != nil {
-		return errors.New("invalid booking ID")
+		return errors.New("invalid booking ID format")
 	}
 
-	result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": objID})
-	if err != nil {
-		return err
+	// Tạo filter
+	filter := bson.M{"_id": bookingObjID}
+	if role == "Client" {
+		filter["user_id"] = userID // userID là dạng string, KHÔNG chuyển sang ObjectID
 	}
 
+	// Log để debug
+	fmt.Println("Delete filter:", filter)
+
+	// Thực hiện xóa
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return errors.New("failed to delete booking")
+	}
 	if result.DeletedCount == 0 {
-		return errors.New("booking not found")
+		return errors.New("booking not found or permission denied")
 	}
 
 	return nil
 }
+
 
 func DeleteAllBookingsInMonth(year int, month int) error {
 	collection := config.GetCollection("CourtBookings")
