@@ -117,6 +117,43 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
+func GetUserBookingsByDateHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+	date := r.URL.Query().Get("date") // expected format: yyyy-mm-dd
+
+	bookings, err := services.GetUserBookingsByDate(token, date)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if bookings == nil {
+		bookings = []models.CourtBooking{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bookings)
+}
+
+func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+	month := r.URL.Query().Get("month") // expected format: yyyy-mm
+
+	bookings, err := services.GetUserBookingsByMonth(token, month)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if bookings == nil {
+		bookings = []models.CourtBooking{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bookings)
+}
+
+
 func DeleteBookingByIDHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
