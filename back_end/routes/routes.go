@@ -15,6 +15,8 @@ func AuthRoutes() {
 	http.HandleFunc("/createCourt", controllers.CreateCourtHandler)
 	http.HandleFunc("/bookCourt", controllers.BookCourtHandler)
 	http.HandleFunc("/getCourtBookingsOnSpecificDate", controllers.GetBookingsForCourtOnSpecificDateHandler)
+	http.HandleFunc("/getUserBookingByDate", controllers.GetUserBookingsByDateHandler)
+	http.HandleFunc("/getUserBookingByMonth", controllers.GetUserBookingsByMonthHandler)
 	http.HandleFunc("/deleteSpecificBooking", controllers.DeleteBookingByIDHandler)
 	http.HandleFunc("/deleteAllBookingInMonth", controllers.DeleteAllBookingsInMonthHandler)
 	http.HandleFunc("/deleteAllBookingOfCourtInMonth", controllers.DeleteBookingsOfCourtInMonthHandler)
