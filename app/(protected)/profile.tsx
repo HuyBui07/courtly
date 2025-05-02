@@ -45,14 +45,14 @@ const ProfileScreen = () => {
         />
       </View>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation
       <View style={styles.bottomNav}>
         <NavItem icon="home" label="Home" />
         <NavItem icon="football" label="Turf" />
         <NavItem icon="clipboard" label="Booking" />
         <NavItem icon="heart" label="Favorites" />
         <NavItem icon="person" label="Profile" active />
-      </View>
+      </View> */}
     </View>
   );
 };
