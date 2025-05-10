@@ -15,9 +15,11 @@ func AuthRoutes() {
 	http.HandleFunc("/createCourt", controllers.CreateCourtHandler)
 	http.HandleFunc("/bookCourt", controllers.BookCourtHandler)
 	http.HandleFunc("/getCourtBookingsOnSpecificDate", controllers.GetBookingsForCourtOnSpecificDateHandler)
-	http.HandleFunc("/deleteSpecificBooking", controllers.DeleteBookingByIDHandler)
+	http.HandleFunc("/getUserBookingByDate", controllers.GetUserBookingsByDateHandler)
+	http.HandleFunc("/getUserBookingByMonth", controllers.GetUserBookingsByMonthHandler)
+
+	// Cái này cho user hủy lịch
+	http.HandleFunc("/deleteSpecificBooking", controllers.DeleteBookingHandler)
 	http.HandleFunc("/deleteAllBookingInMonth", controllers.DeleteAllBookingsInMonthHandler)
 	http.HandleFunc("/deleteAllBookingOfCourtInMonth", controllers.DeleteBookingsOfCourtInMonthHandler)
-
-
 }

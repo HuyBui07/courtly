@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"back_end/config"
@@ -78,11 +79,9 @@ func CreateCourtBooking(courtID, userID string, startTime, endTime time.Time) er
 func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models.CourtBooking, error) {
 	collection := config.GetCollection("CourtBookings")
 
-	// Xác định khoảng thời gian trong ngày đó
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 	endOfDay := startOfDay.Add(24 * time.Hour)
 
-	// Query: court_id == courtID && start_time nằm trong khoảng ngày đó
 	filter := bson.M{
 		"court_id": courtID,
 		"start_time": bson.M{
@@ -109,25 +108,110 @@ func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models
 	return bookings, nil
 }
 
-func DeleteBookingByID(bookingID string) error {
+func GetUserBookingsByDate(token, dateStr string) ([]models.CourtBooking, error) {
+	user, err := GetUserDataByToken(token)
+	if err != nil {
+		return nil, errors.New("unauthorized")
+	}
+
+	date, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return nil, errors.New("invalid date format. Expected yyyy-mm-dd")
+	}
+
+	start := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	end := start.Add(24 * time.Hour)
+
+	collection := config.GetCollection("CourtBookings")
+	filter := bson.M{
+		"user_id":    user.ID.Hex(),
+		"start_time": bson.M{"$gte": start, "$lt": end},
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	var bookings []models.CourtBooking
+	for cursor.Next(context.TODO()) {
+		var b models.CourtBooking
+		if err := cursor.Decode(&b); err == nil {
+			bookings = append(bookings, b)
+		}
+	}
+
+	return bookings, nil
+}
+
+func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBooking, error) {
+	user, err := GetUserDataByToken(token)
+	if err != nil {
+		return nil, errors.New("unauthorized")
+	}
+
+	date, err := time.Parse("2006-01", monthStr)
+	if err != nil {
+		return nil, errors.New("invalid month format. Expected yyyy-mm")
+	}
+
+	start := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 1, 0)
+
+	collection := config.GetCollection("CourtBookings")
+	filter := bson.M{
+		"user_id":    user.ID.Hex(),
+		"start_time": bson.M{"$gte": start, "$lt": end},
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	var bookings []models.CourtBooking
+	for cursor.Next(context.TODO()) {
+		var b models.CourtBooking
+		if err := cursor.Decode(&b); err == nil {
+			bookings = append(bookings, b)
+		}
+	}
+
+	return bookings, nil
+}
+
+
+func DeleteBookingByID(userID string, role string, bookingID string) error {
 	collection := config.GetCollection("CourtBookings")
 
-	objID, err := primitive.ObjectIDFromHex(bookingID)
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
 	if err != nil {
-		return errors.New("invalid booking ID")
+		return errors.New("invalid booking ID format")
 	}
 
-	result, err := collection.DeleteOne(context.TODO(), bson.M{"_id": objID})
-	if err != nil {
-		return err
+	// Tạo filter
+	filter := bson.M{"_id": bookingObjID}
+	if role == "Client" {
+		filter["user_id"] = userID // userID là dạng string, KHÔNG chuyển sang ObjectID
 	}
 
+	// Log để debug
+	fmt.Println("Delete filter:", filter)
+
+	// Thực hiện xóa
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return errors.New("failed to delete booking")
+	}
 	if result.DeletedCount == 0 {
-		return errors.New("booking not found")
+		return errors.New("booking not found or permission denied")
 	}
 
 	return nil
 }
+
 
 func DeleteAllBookingsInMonth(year int, month int) error {
 	collection := config.GetCollection("CourtBookings")

@@ -1,14 +1,20 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
+	"back_end/config"
 	"back_end/models"
 	"back_end/services"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BookingRequest struct {
@@ -117,39 +123,104 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func DeleteBookingByIDHandler(w http.ResponseWriter, r *http.Request) {
+func GetUserBookingsByDateHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+	date := r.URL.Query().Get("date") // expected format: yyyy-mm-dd
+
+	bookings, err := services.GetUserBookingsByDate(token, date)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if bookings == nil {
+		bookings = []models.CourtBooking{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bookings)
+}
+
+func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
+	month := r.URL.Query().Get("month") // expected format: yyyy-mm
+
+	bookings, err := services.GetUserBookingsByMonth(token, month)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if bookings == nil {
+		bookings = []models.CourtBooking{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bookings)
+}
+
+
+func DeleteBookingByID(userID string, role string, bookingID string) error {
+	collection := config.GetCollection("CourtBookings")
+
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
+	if err != nil {
+		return errors.New("invalid booking ID format")
+	}
+
+	// Tạo filter
+	filter := bson.M{"_id": bookingObjID}
+	if role == "Client" {
+		filter["user_id"] = userID // userID là dạng string, KHÔNG chuyển sang ObjectID
+	}
+
+	// Log để debug
+	fmt.Println("Delete filter:", filter)
+
+	// Thực hiện xóa
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return errors.New("failed to delete booking")
+	}
+	if result.DeletedCount == 0 {
+		return errors.New("booking not found or permission denied")
+	}
+
+	return nil
+}
+
+func DeleteBookingHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodDelete {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// Kiểm tra Authorization
-	token := r.Header.Get("Authorization")
-	if token == "" {
-		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+	bookingID := r.URL.Query().Get("booking_id")
+	if bookingID == "" {
+		http.Error(w, "booking_id is required", http.StatusBadRequest)
 		return
 	}
 
-	_, err := services.GetUserDataByToken(token)
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := services.GetUserDataByToken(token)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	bookingID := r.URL.Query().Get("booking_id")
-	if bookingID == "" {
-		http.Error(w, "Missing booking_id parameter", http.StatusBadRequest)
-		return
-	}
-
-	err = services.DeleteBookingByID(bookingID)
+	err = services.DeleteBookingByID(user.User_id, user.Type, bookingID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to delete booking: %v", err), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Booking deleted successfully"))
+	json.NewEncoder(w).Encode(map[string]string{"message": "Booking deleted successfully"})
 }
 
 func DeleteAllBookingsInMonthHandler(w http.ResponseWriter, r *http.Request) {
