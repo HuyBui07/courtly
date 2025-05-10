@@ -9,8 +9,5 @@ export const useLogin = () => {
     onSuccess: (data) => {
       console.log("Login successful", data);
     },
-    onError: (error) => {
-      console.error(error);
-    },
   });
 };
