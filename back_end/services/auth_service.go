@@ -15,19 +15,19 @@ import (
 )
 
 var Token string
-func RegisterUser(user *models.User) error {
+func RegisterUser(user *models.User) (string, error) {
     collection := config.GetCollection("Users")
     var existingUser models.User
     err := collection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&existingUser)
 
     if err == nil {
-        return errors.New("email already exists")
+        return "", errors.New("email already exists")
     }
 
     // Hash password
     hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
     if err != nil {
-        return err
+        return "", err
     }
 
     hashedPasswordStr := string(hashedPassword)
@@ -39,7 +39,7 @@ func RegisterUser(user *models.User) error {
     // Insert user vào database
     result, err := collection.InsertOne(context.Background(), user)
     if err != nil {
-        return err
+        return "", err
     }
 
     // objectId = user_id
@@ -50,10 +50,20 @@ func RegisterUser(user *models.User) error {
 
     _, err = collection.UpdateOne(context.Background(), filter, update)
     if err != nil {
-        return err
+        return "", err
     }
 
-    return nil
+    // Tạo token
+    token, err := utils.GenerateJWT(user.User_id)
+    if err != nil {
+        return "", err
+    }
+    Token = token
+    // Cập nhật token vào MongoDB
+    updateToken := bson.M{"$set": bson.M{"token": token, "update_at": time.Now()}}
+    _, err = collection.UpdateOne(context.TODO(), bson.M{"_id": result.InsertedID}, updateToken)
+
+    return token, err
 }
 
 func LoginUser(email, password string) (string, error) {

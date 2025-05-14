@@ -3860,6 +3860,7 @@ cosmiconfig@^5.0.5:
     "@react-navigation/bottom-tabs" "^7.2.0"
     "@react-navigation/native" "^7.0.14"
     "@tanstack/react-query" "^5.74.4"
+    axios "^1.9.0"
     courtly "file:"
     expo "~52.0.39"
     expo-app-loading "^2.1.1"

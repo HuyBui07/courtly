@@ -60,6 +60,11 @@ export const AuthService = {
       }
 
       const data = await response.json();
+      if (data.token) {
+        TokenManager.set(data.token);
+      } else {
+        throw new Error("No access token received");
+      }
       return data;
     } catch (error: any) {
       throw new Error(error.message);

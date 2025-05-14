@@ -87,6 +87,7 @@ const SignUp = () => {
         onChangeText={formik.handleChange("email")}
         left={<TextInput.Icon icon="email" />}
         error={!!formik.errors.email && formik.touched.email}
+        autoCapitalize="none"
       />
 
       {formik.touched.email && formik.errors.email && (
@@ -106,6 +107,7 @@ const SignUp = () => {
         onChangeText={formik.handleChange("contactNumber")}
         left={<TextInput.Icon icon="phone" />}
         error={!!formik.errors.contactNumber && formik.touched.contactNumber}
+        inputMode="numeric"
       />
 
       {formik.touched.contactNumber && formik.errors.contactNumber && (
@@ -126,6 +128,7 @@ const SignUp = () => {
         onChangeText={formik.handleChange("password")}
         left={<TextInput.Icon icon="lock" />}
         error={!!formik.errors.password && formik.touched.password}
+        autoCapitalize="none"
       />
 
       {formik.touched.password && formik.errors.password && (
@@ -148,6 +151,7 @@ const SignUp = () => {
         error={
           !!formik.errors.confirmPassword && formik.touched.confirmPassword
         }
+        autoCapitalize="none"
       />
 
       {formik.touched.confirmPassword && formik.errors.confirmPassword && (

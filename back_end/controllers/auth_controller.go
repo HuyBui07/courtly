@@ -26,13 +26,24 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    if err := services.RegisterUser(&user); err != nil {
+    token, err := services.RegisterUser(&user)
+    if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
+    response := AuthResponse{
+        Message: "User registered successfully",
+        Token:   token,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+
     w.WriteHeader(http.StatusOK)
-    w.Write([]byte("User registered successfully"))
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+    }
+    fmt.Println("User registered successfully")
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {

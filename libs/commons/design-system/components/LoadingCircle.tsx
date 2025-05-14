@@ -1,7 +1,7 @@
 import React from "react";
 
 import { View, StyleSheet } from "react-native";
-// import LottieView from "lottie-react-native"
+import LottieView from "lottie-react-native"
 
 import { useLoadingState } from "@/libs/commons/stores/useLoadingState";
 
@@ -13,13 +13,12 @@ export const LoadingCircle = () => {
       <View
         style={[styles.container, { display: isLoading ? "flex" : "none" }]}
       >
-        Loading...
-        {/* <LottieView
+        <LottieView
           source={require("@/assets/gifs/loading.json")}
           autoPlay
           loop
           style={{ width: 100, height: 100 }}
-        /> */}
+        />
       </View>
     )
   );
