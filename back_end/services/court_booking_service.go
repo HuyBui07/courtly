@@ -13,19 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateCourtBooking(courtID, userID string, startTime, endTime time.Time) error {
+func CreateCourtBooking(courtID int32, userID string, startTime, endTime time.Time) error {
 	collection := config.GetCollection("CourtBookings")
 	courtsCollection := config.GetCollection("Courts")
 	usersCollection := config.GetCollection("Users")
 
-	// Kiểm tra Court có tồn tại không
-	courtObjID, err := primitive.ObjectIDFromHex(courtID)
-	if err != nil {
-		return errors.New("invalid court ID")
-	}
-
 	var court models.Court
-	err = courtsCollection.FindOne(context.TODO(), bson.M{"_id": courtObjID}).Decode(&court)
+	err := courtsCollection.FindOne(context.TODO(), bson.M{"court_id": courtID}).Decode(&court)
 	if err != nil {
 		return errors.New("court not found")
 	}

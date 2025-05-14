@@ -18,7 +18,7 @@ import (
 )
 
 type BookingRequest struct {
-	CourtID   string `json:"court_id"`
+	CourtID   int32 `json:"court_id"`
 	StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
 	EndTime   string `json:"end_time"`
 }
