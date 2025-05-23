@@ -13,18 +13,28 @@ import BottomSheet from "@/libs/my-booking/components/BottomSheet";
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { BookingOrder } from "@/libs/my-booking/types";
+import { useGetAllBookedCourts } from "@/libs/my-booking/hooks/useGetAllBookedCourts";
 
 const BookCourt = () => {
   const defaultStyles = useDefaultStyles("light");
 
   // Date picker
   const [date, setDate] = useState<DateType>(new Date());
+  const { data: bookedCourts, isLoading } = useGetAllBookedCourts(
+    date?.toLocaleString("en-US", {}).split(",")[0] ?? ""
+  );
   const [show, setShow] = useState(false);
 
   const selectDate = (date: DateType) => {
     setDate(date);
     setShow(false);
   };
+
+  const court1Booked = bookedCourts?.find(
+    (court: any) => court.courtId === 1
+  )
+
+  
 
   // Booking courts
   const [selectedTimeBlockIndexesCourt1, setSelectedTimeBlockIndexesCourt1] =

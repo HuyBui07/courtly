@@ -11,6 +11,7 @@ import Animated, {
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
 import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
+import { Booking } from "../types/Booking";
 
 const InformationLine = ({
   title,
@@ -32,7 +33,7 @@ const InformationLine = ({
 };
 
 const StateText = ({ state }: { state: string }) => {
-  const color = state === "Approved" ? colors.primary : "red";
+  const color = state === "Booked" ? colors.primary : "red";
 
   return (
     <View
@@ -55,7 +56,7 @@ const StateText = ({ state }: { state: string }) => {
       </Text>
       <MaterialCommunityIcons
         name={
-          state === "Approved" ? "check-circle-outline" : "close-circle-outline"
+            state === "Booked" ? "check-circle-outline" : "close-circle-outline"
         }
         size={20}
         color={color}
@@ -64,20 +65,43 @@ const StateText = ({ state }: { state: string }) => {
   );
 };
 
-const CalendarComponent = () => {
+const formatDate = (date: string) => {
+  const dateObj = new Date(date);
+  return dateObj.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const formatTime = (start: string, end: string) => {
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  const formatTime = (date: Date) => {
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+  return `${formatTime(startDate)} - ${formatTime(endDate)}`;
+};
+
+const CalendarComponent = ({ booking }: { booking: Booking }) => {
   const [isExtended, setIsExtended] = useState(false);
 
-  return (
+  const formattedDate = formatDate(booking.start_time);
+  const formattedTime = formatTime(booking.start_time, booking.end_time);
+
+  return (  
     <AnimatedTouchableOpacity
       layout={LinearTransition.springify()}
       onPress={() => setIsExtended(!isExtended)}
       style={styles.container}
     >
-      <StateText state="Cancelled" />
+      <StateText state={booking.state} />
 
-      <InformationLine title="Court" value="Court 1" />
-      <InformationLine title="Date" value="29/03/2025" />
-      <InformationLine title="Time" value="10:00 - 11:00" />
+      <InformationLine title="Court" value={booking.court_id.toString()} />
+      <InformationLine title="Date" value={formattedDate} />
+      <InformationLine title="Time" value={formattedTime} />
 
       {isExtended && (
         <Animated.View

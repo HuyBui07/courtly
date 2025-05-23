@@ -13,61 +13,104 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateCourtBooking(courtID int32, userID string, startTime, endTime time.Time) error {
+type BookingOrder struct {
+	CourtID   int32
+	UserID    string
+	StartTime time.Time
+	EndTime   time.Time
+}
+
+func CreateCourtBooking(orders []BookingOrder) error {
 	collection := config.GetCollection("CourtBookings")
 	courtsCollection := config.GetCollection("Courts")
 	usersCollection := config.GetCollection("Users")
 
-	var court models.Court
-	err := courtsCollection.FindOne(context.TODO(), bson.M{"court_id": courtID}).Decode(&court)
-	if err != nil {
-		return errors.New("court not found")
-	}
+	for _, order := range orders {
+		var court models.Court
+		err := courtsCollection.FindOne(context.TODO(), bson.M{"court_id": order.CourtID}).Decode(&court)
+		if err != nil {
+			return errors.New("court not found")
+		}
 
-	// Kiểm tra User có tồn tại không
-	userObjID, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return errors.New("invalid user ID")
-	}
+		// Kiểm tra User có tồn tại không
+		userObjID, err := primitive.ObjectIDFromHex(order.UserID)
+		if err != nil {
+			return errors.New("invalid user ID")
+		}
 
-	var user models.User
-	err = usersCollection.FindOne(context.TODO(), bson.M{"_id": userObjID}).Decode(&user)
-	if err != nil {
-		return errors.New("user not found")
-	}
+		var user models.User
+		err = usersCollection.FindOne(context.TODO(), bson.M{"_id": userObjID}).Decode(&user)
+		if err != nil {
+			return errors.New("user not found")
+		}
 
-	// Kiểm tra khoảng thời gian đã được book chưa
-	filter := bson.M{
-		"court_id": courtID,  // Dùng courtID dưới dạng string
-		"$or": []bson.M{
-			{"start_time": bson.M{"$lt": endTime}, "end_time": bson.M{"$gt": startTime}},
-		},
-	}
+		// Kiểm tra khoảng thời gian đã được book chưa
+		filter := bson.M{
+			"court_id": order.CourtID, // Dùng courtID dưới dạng string
+			"$or": []bson.M{
+				{"start_time": bson.M{"$lt": order.EndTime}, "end_time": bson.M{"$gt": order.StartTime}},
+			},
+		}
 
-	count, err := collection.CountDocuments(context.TODO(), filter)
-	if err != nil {
-		return errors.New("error checking existing bookings")
-	}
+		count, err := collection.CountDocuments(context.TODO(), filter)
+		if err != nil {
+			return errors.New("error checking existing bookings")
+		}
 
-	if count > 0 {
-		return errors.New("time slot already booked")
-	}
+		if count > 0 {
+			return errors.New("time slot already booked")
+		}
 
-	// Tạo booking mới
-	newBooking := models.CourtBooking{
-		CourtID:   courtID,  // Dùng courtID dưới dạng string
-		UserID:    userID,   // Dùng userID dưới dạng string
-		StartTime: startTime,
-		EndTime:   endTime,
-		CreatedAt: time.Now(),
-	}
+		// Tạo booking mới
+		newBooking := models.CourtBooking{
+			CourtID:   order.CourtID,
+			UserID:    order.UserID,
+			StartTime: order.StartTime,
+			EndTime:   order.EndTime,
+			CreatedAt: time.Now(),
+			State:     "Booked",
+		}
 
-	_, err = collection.InsertOne(context.TODO(), newBooking)
-	if err != nil {
-		return errors.New("failed to create booking")
+		_, err = collection.InsertOne(context.TODO(), newBooking)
+		if err != nil {
+			return errors.New("failed to create booking")
+		}
 	}
 
 	return nil
+}
+
+func GetUserBookings(userId string) ([]models.CourtBooking, []models.CourtBooking, error) {
+	collection := config.GetCollection("CourtBookings")
+	filter := bson.M{"user_id": userId}
+
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, nil, errors.New("failed to fetch bookings")
+	}
+	defer cursor.Close(context.TODO())
+
+	var upcomingBookings []models.CourtBooking
+	var pastBookings []models.CourtBooking
+	for cursor.Next(context.TODO()) {
+		var booking models.CourtBooking
+		if err := cursor.Decode(&booking); err != nil {
+			return nil, nil, errors.New("failed to decode booking")
+		}
+		// Convert booking times to UTC for consistent comparison
+		now := time.Now().UTC()
+		bookingStart := booking.StartTime.UTC()
+
+		if bookingStart.After(now) {
+			upcomingBookings = append(upcomingBookings, booking)
+		} else {
+			pastBookings = append(pastBookings, booking)
+		}
+		continue
+
+	}
+
+	return upcomingBookings, pastBookings, nil
 }
 
 func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models.CourtBooking, error) {
@@ -82,6 +125,35 @@ func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models
 			"$gte": startOfDay,
 			"$lt":  endOfDay,
 		},
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, errors.New("failed to fetch bookings")
+	}
+	defer cursor.Close(context.TODO())
+
+	var bookings []models.CourtBooking
+	for cursor.Next(context.TODO()) {
+		var booking models.CourtBooking
+		if err := cursor.Decode(&booking); err != nil {
+			return nil, errors.New("failed to decode booking")
+		}
+		bookings = append(bookings, booking)
+	}
+
+	return bookings, nil
+}
+
+func GetAllBookingsOnASpecificDate(date time.Time) ([]models.CourtBooking, error) {
+	collection := config.GetCollection("CourtBookings")
+
+	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
+	endOfDay := startOfDay.Add(24 * time.Hour)
+
+	filter := bson.M{
+		"start_time": bson.M{"$gte": startOfDay, "$lt": endOfDay},
+		"state":      "Booked",
 	}
 
 	cursor, err := collection.Find(context.TODO(), filter)
@@ -176,7 +248,6 @@ func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBooking, erro
 	return bookings, nil
 }
 
-
 func DeleteBookingByID(userID string, role string, bookingID string) error {
 	collection := config.GetCollection("CourtBookings")
 
@@ -205,7 +276,6 @@ func DeleteBookingByID(userID string, role string, bookingID string) error {
 
 	return nil
 }
-
 
 func DeleteAllBookingsInMonth(year int, month int) error {
 	collection := config.GetCollection("CourtBookings")
