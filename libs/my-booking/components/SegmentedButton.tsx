@@ -10,10 +10,14 @@ import {
   LayoutChangeEvent,
 } from "react-native";
 import Animated, { useSharedValue, withSpring } from "react-native-reanimated";
-import { Avatar } from "react-native-paper";
 
-const SegmentedButton = () => {
-  const [selected, setSelected] = useState("upcoming");
+const SegmentedButton = ({
+  selected,
+  setSelected,
+}: {
+  selected: string;
+  setSelected: (selected: string) => void;
+}) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const buttonWidth = dimensions.width / 2;
@@ -28,7 +32,7 @@ const SegmentedButton = () => {
   const buttonPositionX = useSharedValue(0);
 
   const handleClick = () => {
-    setSelected((prev) => (prev === "upcoming" ? "past" : "upcoming"));
+    setSelected(selected === "upcoming" ? "past" : "upcoming");
     buttonPositionX.value = withSpring(
       selected === "upcoming" ? buttonWidth : 0
     );

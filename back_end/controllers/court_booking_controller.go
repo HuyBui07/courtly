@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,7 +19,7 @@ import (
 )
 
 type BookingRequest struct {
-	CourtID   string `json:"court_id"`
+	CourtID   int32  `json:"court_id"`
 	StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
 	EndTime   string `json:"end_time"`
 }
@@ -29,24 +30,12 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req BookingRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	var requests []BookingRequest
+	if err := json.NewDecoder(r.Body).Decode(&requests); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	startTime, err := time.Parse(time.RFC3339, req.StartTime)
-	if err != nil {
-		http.Error(w, "Invalid start time format", http.StatusBadRequest)
-		return
-	}
-	endTime, err := time.Parse(time.RFC3339, req.EndTime)
-	if err != nil {
-		http.Error(w, "Invalid end time format", http.StatusBadRequest)
-		return
-	}
-
-	
 	// Lấy user từ token header
 	token := r.Header.Get("Authorization")
 	if token == "" {
@@ -59,16 +48,76 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = services.CreateCourtBooking(req.CourtID, user.ID.Hex(), startTime, endTime)
+	var orders []services.BookingOrder
+	for _, req := range requests {
+		startTime, err := time.Parse(time.RFC3339, req.StartTime)
+		if err != nil {
+			http.Error(w, "Invalid start time format", http.StatusBadRequest)
+			return
+		}
+		endTime, err := time.Parse(time.RFC3339, req.EndTime)
+		if err != nil {
+			http.Error(w, "Invalid end time format", http.StatusBadRequest)
+			return
+		}
+
+		orders = append(orders, services.BookingOrder{
+			CourtID:   req.CourtID,
+			UserID:    user.ID.Hex(),
+			StartTime: startTime,
+			EndTime:   endTime,
+		})
+	}
+
+	err = services.CreateCourtBooking(orders)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Court booked successfully"))
+	w.Write([]byte("Courts booked successfully"))
 }
 
+func GetUserBookingsHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Received request: %s %s", r.Method, r.URL.Path)
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Lấy user từ token header
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	upcomingBookings, pastBookings, err := services.GetUserBookings(user.ID.Hex())
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to fetch bookings: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	if upcomingBookings == nil {
+		upcomingBookings = []models.CourtBooking{}
+	}
+	if pastBookings == nil {
+		pastBookings = []models.CourtBooking{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"upcoming_bookings": upcomingBookings,
+		"past_bookings":     pastBookings,
+	})
+}
 
 func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -77,11 +126,11 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	// Lấy các query parameter: court_id và date
-	courtID := r.URL.Query().Get("court_id")
+	courtIDStr := r.URL.Query().Get("court_id")
 	dateStr := r.URL.Query().Get("date")
 
-	if courtID == "" || dateStr == "" {
-		http.Error(w, "court_id and date are required", http.StatusBadRequest)
+	if dateStr == "" {
+		http.Error(w, "date is required", http.StatusBadRequest)
 		return
 	}
 
@@ -98,14 +147,16 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
 		return
 	}
+
+	// Lấy user từ token
 	_, err = services.GetUserDataByToken(token)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Gọi service để lấy bookings
-	bookings, err := services.GetBookingsForCourtOnSpecificDate(courtID, parsedDate)
+	bookings, err := services.GetBookingsForCourtOnSpecificDate(courtIDStr, parsedDate)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to fetch bookings: %v", err), http.StatusInternalServerError)
 		return
@@ -123,13 +174,26 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func GetUserBookingsByDateHandler(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get("Authorization")
-	date := r.URL.Query().Get("date") // expected format: yyyy-mm-dd
+func GetAllBookingsOnASpecificDateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
 
-	bookings, err := services.GetUserBookingsByDate(token, date)
+	dateStr := r.URL.Query().Get("date")
+	if dateStr == "" {
+		http.Error(w, "date is required", http.StatusBadRequest)
+		return
+	}
+	parsedDate, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Error: %v", err), http.StatusBadRequest)
+		http.Error(w, "Invalid date format, expected YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+
+	bookings, err := services.GetAllBookingsOnASpecificDate(parsedDate)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to fetch bookings: %v", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -137,8 +201,33 @@ func GetUserBookingsByDateHandler(w http.ResponseWriter, r *http.Request) {
 		bookings = []models.CourtBooking{}
 	}
 
+	// Create response objects with additional fields
+	type BookingResponse struct {
+		CourtID        int32  `json:"court_id"`
+		StartTimeIndex int    `json:"start_time_index"`
+		EndTimeIndex   int    `json:"end_time_index"`
+	}
+
+	// Map bookings to response objects
+	response := make([]BookingResponse, len(bookings))
+	for i := range bookings {
+		// Convert start and end times to indexes (8:00 = index 0, 9:00 = index 1, etc)
+		startHour := bookings[i].StartTime.Hour()
+		endHour := bookings[i].EndTime.Hour()
+		startIndex := startHour - 8 // 8:00 maps to index 0
+		endIndex := endHour - 8
+		response[i] = BookingResponse{
+			CourtID:        bookings[i].CourtID,
+			StartTimeIndex: startIndex,
+			EndTimeIndex:   endIndex,
+		}
+	}
+
+	// Replace bookings with response for encoding
+	bookings = nil // Clear original slice
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(bookings)
+	json.NewEncoder(w).Encode(response)
 }
 
 func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
@@ -158,7 +247,6 @@ func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(bookings)
 }
-
 
 func DeleteBookingByID(userID string, role string, bookingID string) error {
 	collection := config.GetCollection("CourtBookings")

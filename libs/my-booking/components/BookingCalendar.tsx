@@ -19,6 +19,10 @@ const BookingCalendar = ({
   setSelectedTimeBlockIndexesCourt2,
   setSelectedTimeBlockIndexesCourt3,
   setSelectedTimeBlockIndexesCourt4,
+  bookedCourt1,
+  bookedCourt2,
+  bookedCourt3,
+  bookedCourt4,
 }: {
   selectedTimeBlockIndexesCourt1: number[];
   selectedTimeBlockIndexesCourt2: number[];
@@ -36,8 +40,12 @@ const BookingCalendar = ({
   setSelectedTimeBlockIndexesCourt4: React.Dispatch<
     React.SetStateAction<number[]>
   >;
+  bookedCourt1: number[];
+  bookedCourt2: number[];
+  bookedCourt3: number[];
+  bookedCourt4: number[];
 }) => {
-  console.log("BookingCalendar");
+  console.log("BookingCalendar: ", bookedCourt1);
 
   const courts = [
     { name: "Court 1" },
@@ -161,13 +169,14 @@ const BookingCalendar = ({
                 key={index}
                 style={{
                   ...styles.timeBlock,
-                  backgroundColor: selectedTimeBlockIndexesCourt1?.includes(
-                    index
-                  )
+                  backgroundColor: bookedCourt1?.includes(index)
+                    ? "red"
+                    : selectedTimeBlockIndexesCourt1?.includes(index)
                     ? colors.primary
                     : "white",
                 }}
                 onPress={() => handleTimeBlockPress(1, index)}
+                disabled={bookedCourt1?.includes(index)}
               ></TouchableOpacity>
             ))}
           </View>

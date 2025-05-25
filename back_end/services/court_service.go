@@ -13,7 +13,11 @@ import (
 
 func CreateCourt(court *models.Court) error {
     collection := config.GetCollection("Courts")
-	
+    court_id, err := collection.CountDocuments(context.TODO(), bson.M{})
+    if err != nil {
+        return err
+    }
+    
     court.CreatedAt = time.Now()
     court.UpdatedAt = time.Now()
 
@@ -25,7 +29,7 @@ func CreateCourt(court *models.Court) error {
 
     // Cập nhật court_id sau khi insert
     objectID := result.InsertedID.(primitive.ObjectID)
-    courtID := objectID.Hex()
+    courtID := court_id + 1
 
     filter := bson.M{"_id": objectID}
     update := bson.M{"$set": bson.M{"court_id": courtID}}
