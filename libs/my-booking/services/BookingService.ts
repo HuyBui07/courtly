@@ -26,7 +26,7 @@ export const BookingService = {
   },
   getAllBookedCourtOnSpecificDate: async (date: string) => {
     try {
-      const response = await fetch(GET_ALL_BOOKED_COURT_ON_SPECIFIC_DATE_URL, {
+      const response = await fetch(GET_ALL_BOOKED_COURT_ON_SPECIFIC_DATE_URL + "?date=" + date, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

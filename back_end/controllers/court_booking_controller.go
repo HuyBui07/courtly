@@ -203,8 +203,7 @@ func GetAllBookingsOnASpecificDateHandler(w http.ResponseWriter, r *http.Request
 
 	// Create response objects with additional fields
 	type BookingResponse struct {
-		models.CourtBooking
-		Status         string `json:"status"`
+		CourtID        int32  `json:"court_id"`
 		StartTimeIndex int    `json:"start_time_index"`
 		EndTimeIndex   int    `json:"end_time_index"`
 	}
@@ -218,8 +217,7 @@ func GetAllBookingsOnASpecificDateHandler(w http.ResponseWriter, r *http.Request
 		startIndex := startHour - 8 // 8:00 maps to index 0
 		endIndex := endHour - 8
 		response[i] = BookingResponse{
-			CourtBooking:   bookings[i],
-			Status:         "confirmed",
+			CourtID:        bookings[i].CourtID,
 			StartTimeIndex: startIndex,
 			EndTimeIndex:   endIndex,
 		}
