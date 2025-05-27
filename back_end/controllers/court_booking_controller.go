@@ -50,11 +50,17 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 
 	var orders []services.BookingOrder
 	for _, req := range requests {
+		// Check if start time is in the past
 		startTime, err := time.Parse(time.RFC3339, req.StartTime)
 		if err != nil {
 			http.Error(w, "Invalid start time format", http.StatusBadRequest)
 			return
 		}
+		if startTime.Before(time.Now()) {
+			http.Error(w, "Cannot book court in the past", http.StatusBadRequest)
+			return
+		}
+
 		endTime, err := time.Parse(time.RFC3339, req.EndTime)
 		if err != nil {
 			http.Error(w, "Invalid end time format", http.StatusBadRequest)

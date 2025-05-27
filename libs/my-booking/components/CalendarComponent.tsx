@@ -12,6 +12,7 @@ import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
 import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
 import { Booking } from "../types/Booking";
+import { formatDate } from "@/libs/commons/utils";
 
 const InformationLine = ({
   title,
@@ -65,15 +66,6 @@ const StateText = ({ state }: { state: string }) => {
   );
 };
 
-const formatDate = (date: string) => {
-  const dateObj = new Date(date);
-  return dateObj.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-};
-
 const formatTime = (start: string, end: string) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -90,14 +82,19 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
 
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
+  
+  const isPast = new Date(booking.end_time) < new Date();
 
   return (  
     <AnimatedTouchableOpacity
       layout={LinearTransition.springify()}
       onPress={() => setIsExtended(!isExtended)}
-      style={styles.container}
+      style={[
+        styles.container,
+        isPast && { backgroundColor: "#F5F5F5" }
+      ]}
     >
-      <StateText state={booking.state} />
+      {!isPast && <StateText state={booking.state} />}
 
       <InformationLine title="Court" value={booking.court_id.toString()} />
       <InformationLine title="Date" value={formattedDate} />
@@ -118,22 +115,24 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
             mode="outlined"
             labelStyle={{ fontWeight: "bold" }}
             style={{
-              width: "50%",
+              width: isPast ? "100%" : "50%",
               borderRadius: 12,
               borderColor: colors.primary,
             }}
           >
             Details
           </Button>
-          <Button
-            mode="contained"
-            buttonColor="red"
-            textColor="white"
-            labelStyle={{ fontWeight: "bold" }}
-            style={{ width: "50%", borderRadius: 12 }}
-          >
-            Cancell
-          </Button>
+          {!isPast && (
+            <Button
+              mode="contained"
+              buttonColor="red"
+              textColor="white"
+              labelStyle={{ fontWeight: "bold" }}
+              style={{ width: "50%", borderRadius: 12 }}
+            >
+              Cancell
+            </Button>
+          )}
         </Animated.View>
       )}
     </AnimatedTouchableOpacity>

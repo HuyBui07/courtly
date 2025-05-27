@@ -14,6 +14,10 @@ import React, { useState, useCallback, useEffect } from "react";
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { timeBlocks } from "../constants";
+import { BookingOrder } from "../types/BookingOrder";
+import { formatDate } from "@/libs/commons/utils";
+import { BookingService } from "../services/BookingService";
+import { useBookCourt } from "../hooks/mutations/useBookCourt";
 
 const BottomSheet = ({
   date,
@@ -28,7 +32,7 @@ const BottomSheet = ({
   selectedTimeBlockIndexesCourt3: number[];
   selectedTimeBlockIndexesCourt4: number[];
 }) => {
-  const router = useRouter();
+  const { mutate: bookCourt } = useBookCourt();
   const [isExtended, setIsExtended] = useState(false);
   const height = useSharedValue(120);
 
@@ -48,17 +52,37 @@ const BottomSheet = ({
   const handleContinue = async () => {
     if (isExtended) {
       console.log("Checkout");
-      router.push({
-        pathname: "/booking/check-out",
-        params: {
-          selectedTimeBlockIndexesCourt1,
-          selectedTimeBlockIndexesCourt2,
-          selectedTimeBlockIndexesCourt3,
-          selectedTimeBlockIndexesCourt4,
-        },
-      });
+      // Process data
+      let bookingOrder: BookingOrder[] = [];
+      const createBookingOrder = (
+        courtId: number,
+        selectedTimeBlocks: number[]
+      ) => {
+        if (selectedTimeBlocks.length === 0) return null;
+        const sortedBlocks = [...selectedTimeBlocks].sort((a, b) => a - b);
+        return {
+          court_id: courtId,
+          start_time: `${date}T${timeBlocks[sortedBlocks[0]]}:00Z`,
+          end_time: `${date}T${
+            timeBlocks[sortedBlocks[sortedBlocks.length - 1] + 1]
+          }:00Z`,
+        };
+      };
+
+      const courts = [
+        { id: 1, blocks: selectedTimeBlockIndexesCourt1 },
+        { id: 2, blocks: selectedTimeBlockIndexesCourt2 },
+        { id: 3, blocks: selectedTimeBlockIndexesCourt3 },
+        { id: 4, blocks: selectedTimeBlockIndexesCourt4 },
+      ];
+
+      bookingOrder = courts
+        .map((court) => createBookingOrder(court.id, court.blocks))
+        .filter((order): order is BookingOrder => order !== null);
+      bookCourt(bookingOrder);
       return;
     }
+
     height.value = withSpring(height.value + detailsBoxHeight + 32);
     setIsExtended(true);
   };

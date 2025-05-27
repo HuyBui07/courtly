@@ -45,8 +45,6 @@ const BookingCalendar = ({
   bookedCourt3: number[];
   bookedCourt4: number[];
 }) => {
-  console.log("BookingCalendar: ", bookedCourt1);
-
   const courts = [
     { name: "Court 1" },
     { name: "Court 2" },
@@ -94,6 +92,12 @@ const BookingCalendar = ({
     }
   };
 
+  // Disabled time index that passed the current time
+  const currentTime = new Date().getHours();
+  const disabledTimeIndexes = Array.from(
+    { length: currentTime - 8 },
+    (_, index) => index
+  );
   return (
     <View>
       <ScrollView
@@ -113,129 +117,169 @@ const BookingCalendar = ({
                 position: "relative",
               }}
             ></View>
-            {timeBlocks.map((time, index) => (
-              <View
-                key={index}
-                style={{
-                  width: 60,
-                  height: 60,
-                  backgroundColor: colors.lightPrimary,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  position: "relative",
-                }}
-              >
-                <Text
+            {timeBlocks.map((time, index) => {
+              if (disabledTimeIndexes.includes(index)) {
+                return;
+              }
+              return (
+                <View
+                  key={index}
                   style={{
-                    color: "white",
-                    ...textStyles.body,
-                    position: "absolute",
-                    left: -19,
+                    width: 60,
+                    height: 60,
+                    backgroundColor: colors.lightPrimary,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    position: "relative",
                   }}
                 >
-                  {time}
-                </Text>
-                <View
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    bottom: 0,
-                    height: "10%",
-                    width: 0.5,
-                    backgroundColor: "red",
-                    zIndex: 1,
-                  }}
-                ></View>
-                <View
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    bottom: 0,
-                    height: "10%",
-                    width: 0.5,
-                    backgroundColor: "red",
-                    zIndex: 1,
-                  }}
-                ></View>
-              </View>
-            ))}
+                  <Text
+                    style={{
+                      color: "white",
+                      ...textStyles.body,
+                      position: "absolute",
+                      left: -19,
+                    }}
+                  >
+                    {time}
+                  </Text>
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      bottom: 0,
+                      height: "10%",
+                      width: 0.5,
+                      backgroundColor: "red",
+                      zIndex: 1,
+                    }}
+                  ></View>
+                  <View
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      bottom: 0,
+                      height: "10%",
+                      width: 0.5,
+                      backgroundColor: "red",
+                      zIndex: 1,
+                    }}
+                  ></View>
+                </View>
+              );
+            })}
           </View>
 
           {/* Court 1 */}
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
-            {timeBlocks.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.timeBlock,
-                  backgroundColor: bookedCourt1?.includes(index)
-                    ? "red"
-                    : selectedTimeBlockIndexesCourt1?.includes(index)
-                    ? colors.primary
-                    : "white",
-                }}
-                onPress={() => handleTimeBlockPress(1, index)}
-                disabled={bookedCourt1?.includes(index)}
-              ></TouchableOpacity>
-            ))}
+            {timeBlocks.map((_, index) => {
+              if (disabledTimeIndexes.includes(index)) {
+                return;
+              }
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={{
+                    ...styles.timeBlock,
+                    backgroundColor: bookedCourt1?.includes(index)
+                      ? "red"
+                      : selectedTimeBlockIndexesCourt1?.includes(index)
+                      ? colors.primary
+                      : "white",
+                  }}
+                  onPress={() => handleTimeBlockPress(1, index)}
+                  disabled={
+                    bookedCourt1?.includes(index) ||
+                    disabledTimeIndexes.includes(index)
+                  }
+                ></TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Court 2 */}
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
-            {timeBlocks.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.timeBlock,
-                  backgroundColor: selectedTimeBlockIndexesCourt2?.includes(
-                    index
-                  )
-                    ? colors.primary
-                    : "white",
-                }}
-                onPress={() => handleTimeBlockPress(2, index)}
-              ></TouchableOpacity>
-            ))}
+            {timeBlocks.map((_, index) => {
+              if (disabledTimeIndexes.includes(index)) {
+                return;
+              }
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={{
+                    ...styles.timeBlock,
+                    backgroundColor: bookedCourt2?.includes(index)
+                      ? "red"
+                      : selectedTimeBlockIndexesCourt2?.includes(index)
+                      ? colors.primary
+                      : "white",
+                  }}
+                  onPress={() => handleTimeBlockPress(2, index)}
+                  disabled={
+                    bookedCourt2?.includes(index) ||
+                    disabledTimeIndexes.includes(index)
+                  }
+                ></TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Court 3 */}
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
-            {timeBlocks.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.timeBlock,
-                  backgroundColor: selectedTimeBlockIndexesCourt3?.includes(
-                    index
-                  )
-                    ? colors.primary
-                    : "white",
-                }}
-                onPress={() => handleTimeBlockPress(3, index)}
-              ></TouchableOpacity>
-            ))}
+            {timeBlocks.map((_, index) => {
+              if (disabledTimeIndexes.includes(index)) {
+                return;
+              }
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={{
+                    ...styles.timeBlock,
+                    backgroundColor: bookedCourt3?.includes(index)
+                      ? "red"
+                      : selectedTimeBlockIndexesCourt3?.includes(index)
+                      ? colors.primary
+                      : "white",
+                  }}
+                  onPress={() => handleTimeBlockPress(3, index)}
+                  disabled={
+                    bookedCourt3?.includes(index) ||
+                    disabledTimeIndexes.includes(index)
+                  }
+                ></TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Court 4 */}
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
-            {timeBlocks.map((_, index) => (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  ...styles.timeBlock,
-                  backgroundColor: selectedTimeBlockIndexesCourt4?.includes(
-                    index
-                  )
-                    ? colors.primary
-                    : "white",
-                }}
-                onPress={() => handleTimeBlockPress(4, index)}
-              ></TouchableOpacity>
-            ))}
+            {timeBlocks.map((_, index) => {
+              if (disabledTimeIndexes.includes(index)) {
+                return;
+              }
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={{
+                    ...styles.timeBlock,
+                    backgroundColor: bookedCourt4?.includes(index)
+                      ? "red"
+                      : selectedTimeBlockIndexesCourt4?.includes(index)
+                      ? colors.primary
+                      : "white",
+                  }}
+                  onPress={() => handleTimeBlockPress(4, index)}
+                  disabled={
+                    bookedCourt4?.includes(index) ||
+                    disabledTimeIndexes.includes(index)
+                  }
+                ></TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </ScrollView>

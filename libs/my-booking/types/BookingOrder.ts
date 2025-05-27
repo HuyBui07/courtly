@@ -1,11 +1,5 @@
 export type BookingOrder = {
-  date: string;
-  details: [
-    {
-      courtId: number;
-      startTime: string;
-      totalHours: number;
-      price: number;
-    }
-  ];
+  court_id: number;
+  start_time: string;
+  end_time: string;
 };

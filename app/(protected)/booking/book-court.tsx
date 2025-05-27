@@ -12,7 +12,7 @@ import BookingCalendar from "@/libs/my-booking/components/BookingCalendar";
 import BottomSheet from "@/libs/my-booking/components/BottomSheet";
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
-import { useGetAllBookedCourts } from "@/libs/my-booking/hooks/useGetAllBookedCourts";
+import { useGetAllBookedCourts } from "@/libs/my-booking/hooks/queries/useGetAllBookedCourts";
 
 const BookCourt = () => {
   const defaultStyles = useDefaultStyles("light");
@@ -166,7 +166,12 @@ const BookCourt = () => {
         />
 
         <BottomSheet
-          date={date?.toLocaleString("en-US", {}).split(",")[0]}
+          date={date ? new Date(date as Date).toLocaleDateString('en-CA', {
+            year: 'numeric',
+            month: '2-digit',
+              day: "2-digit",
+            })
+          : ""}
           selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
           selectedTimeBlockIndexesCourt2={selectedTimeBlockIndexesCourt2}
           selectedTimeBlockIndexesCourt3={selectedTimeBlockIndexesCourt3}
