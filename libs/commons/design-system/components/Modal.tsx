@@ -21,11 +21,11 @@ const Modal: React.FC<GlobalModalProps> = (props) => {
   const exitingDuration = props.exitingDuration ?? 400;
 
   return (
-    props.isVisible && (
+    props.isVisible && (  
       <Pressable
         onPress={props.onBackdropPress}
         onStartShouldSetResponder={() => false}
-        style={[styles.backdrop]}
+        style={[styles.backdrop]} 
       >
         <Animated.View
           entering={props.entering ?? BounceIn.duration(enteringDuration)}

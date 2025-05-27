@@ -321,3 +321,30 @@ func DeleteBookingsOfCourtInMonth(courtID string, year int, month int) error {
 	_, err = collection.DeleteMany(context.TODO(), filter)
 	return err
 }
+func CancelBookingByID(bookingID string, userID string) error {
+	collection := config.GetCollection("CourtBookings")
+
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
+	if err != nil {
+		return errors.New("invalid booking ID format")
+	}
+
+	// Check if booking exists and belongs to user
+	var booking models.CourtBooking
+	filter := bson.M{"_id": bookingObjID}
+	err = collection.FindOne(context.TODO(), filter).Decode(&booking)
+	if err != nil {
+		return errors.New("booking not found")
+	}
+
+	if booking.UserID != userID {
+		return errors.New("permission denied - booking belongs to different user")
+	}
+
+	_, err = collection.UpdateOne(context.TODO(), filter, bson.M{"$set": bson.M{"state": "Cancelled"}})
+	if err != nil {
+		return errors.New("failed to cancel booking")
+	}
+
+	return nil
+}

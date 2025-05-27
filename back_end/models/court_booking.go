@@ -1,10 +1,12 @@
 package models
 
 import (
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
 type CourtBooking struct {
+	ID        primitive.ObjectID `json:"_id" bson:"_id"`
 	CourtID   int32    `json:"court_id" bson:"court_id"`
 	UserID    string    `json:"user_id" bson:"user_id"`
 	StartTime time.Time `json:"start_time" bson:"start_time"`

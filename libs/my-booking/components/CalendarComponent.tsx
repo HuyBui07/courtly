@@ -13,25 +13,9 @@ import { colors } from "@/libs/commons/design-system/colors";
 import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
 import { Booking } from "../types/Booking";
 import { formatDate } from "@/libs/commons/utils";
-
-const InformationLine = ({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) => {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-      }}
-    >
-      <Text style={[textStyles.body, { marginRight: 16 }]}>{title}:</Text>
-      <Text style={{ ...textStyles.bodyBold }}>{value}</Text>
-    </View>
-  );
-};
+import { InformationLine } from "./InformationLine";
+import { CourtDetailsModalController } from "@/libs/commons/stores/useCourtDetailsModalStore";
+import { useCancelBookingState } from "../hooks/mutations/useCancelBookingState";
 
 const StateText = ({ state }: { state: string }) => {
   const color = state === "Booked" ? colors.primary : "red";
@@ -57,7 +41,7 @@ const StateText = ({ state }: { state: string }) => {
       </Text>
       <MaterialCommunityIcons
         name={
-            state === "Booked" ? "check-circle-outline" : "close-circle-outline"
+          state === "Booked" ? "check-circle-outline" : "close-circle-outline"
         }
         size={20}
         color={color}
@@ -70,8 +54,8 @@ const formatTime = (start: string, end: string) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
   const formatTime = (date: Date) => {
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   };
   return `${formatTime(startDate)} - ${formatTime(endDate)}`;
@@ -79,20 +63,35 @@ const formatTime = (start: string, end: string) => {
 
 const CalendarComponent = ({ booking }: { booking: Booking }) => {
   const [isExtended, setIsExtended] = useState(false);
-
+  const { mutate: cancelBooking } = useCancelBookingState();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
-  
+
   const isPast = new Date(booking.end_time) < new Date();
 
-  return (  
+  const showDetailsModal = () => {
+    const startDate = new Date(booking.start_time);
+    const endDate = new Date(booking.end_time);
+    const durationHours =
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    const price = durationHours * 80;
+
+    CourtDetailsModalController.show({
+      court: booking.court_id.toString(),
+      date: formattedDate,
+      time: formattedTime,
+      duration: `${durationHours} hour${durationHours > 1 ? "s" : ""}`,
+      price: price.toString() + ".000 VND",
+      status: booking.state,
+    });
+  };
+
+  return (
     <AnimatedTouchableOpacity
       layout={LinearTransition.springify()}
       onPress={() => setIsExtended(!isExtended)}
-      style={[
-        styles.container,
-        isPast && { backgroundColor: "#F5F5F5" }
-      ]}
+      disabled={booking.state !== "Booked"}
+      style={[styles.container, isPast && { backgroundColor: "#F5F5F5" }]}
     >
       {!isPast && <StateText state={booking.state} />}
 
@@ -119,6 +118,7 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
               borderRadius: 12,
               borderColor: colors.primary,
             }}
+            onPress={showDetailsModal}
           >
             Details
           </Button>
@@ -129,6 +129,11 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
               textColor="white"
               labelStyle={{ fontWeight: "bold" }}
               style={{ width: "50%", borderRadius: 12 }}
+              onPress={() => {
+                console.log("booking", booking);
+                console.log(booking._id);
+                cancelBooking(booking._id);
+              }}
             >
               Cancell
             </Button>

@@ -24,6 +24,7 @@ func AuthRoutes() {
 	http.HandleFunc("/getUserBookingByMonth", controllers.GetUserBookingsByMonthHandler)
 
 	// Cái này cho user hủy lịch
+	http.HandleFunc("/cancelBookCourt", controllers.CancelBookingByIDHandler)
 	http.HandleFunc("/deleteSpecificBooking", controllers.DeleteBookingHandler)
 	http.HandleFunc("/deleteAllBookingInMonth", controllers.DeleteAllBookingsInMonthHandler)
 	http.HandleFunc("/deleteAllBookingOfCourtInMonth", controllers.DeleteBookingsOfCourtInMonthHandler)

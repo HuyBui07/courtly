@@ -2,6 +2,7 @@ import {
   GET_USER_BOOKINGS_URL,
   GET_ALL_BOOKED_COURT_ON_SPECIFIC_DATE_URL,
   BOOK_COURT_URL,
+  CANCEL_BOOKING_URL,
 } from "../constants";
 
 import { TokenManager } from "@/libs/store/persistStore";
@@ -72,6 +73,19 @@ export const BookingService = {
 
       const data = (await response.text()).trim();
       return data;
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+  cancelBooking: async (bookingID: string) => {
+    try {
+      console.log("bookingID", bookingID);
+      await fetch(CANCEL_BOOKING_URL + "?booking_id=" + bookingID, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+      });
     } catch (error: any) {
       throw new Error(error.message);
     }

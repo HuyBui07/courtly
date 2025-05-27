@@ -409,3 +409,37 @@ func DeleteBookingsOfCourtInMonthHandler(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Bookings for the specified court and month deleted successfully"))
 }
+
+func CancelBookingByIDHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	bookingID := r.URL.Query().Get("booking_id")
+	if bookingID == "" {
+		http.Error(w, "booking_id is required", http.StatusBadRequest)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	err = services.CancelBookingByID(bookingID, user.ID.Hex())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Booking cancelled successfully"))
+}

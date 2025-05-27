@@ -11,6 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { enableLayoutAnimations } from "react-native-reanimated";
 
 import NotificationModal from "@/libs/commons/design-system/components/Modal/NotificationModal";
+import { CourtDetailsModal } from "@/libs/my-booking/components/CourtDetailsModal";
 import LoadingCircle from "@/libs/commons/design-system/components/LoadingCircle";
 import { queryClient } from "@/libs/commons/utils";
 
@@ -50,6 +51,7 @@ export default function RootLayout() {
           </Stack>
 
           <NotificationModal />
+          <CourtDetailsModal />
           <LoadingCircle />
         </View>
       </PaperProvider>

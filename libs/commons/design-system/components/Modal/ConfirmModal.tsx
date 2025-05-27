@@ -4,7 +4,7 @@ import { View, Text, StyleSheet } from "react-native"
 import { Button, IconButton } from "react-native-paper"
 
 import Modal from "../Modal"
-import { useConfirmModalStore } from "@/libs/store"
+import { useConfirmModalStore } from "@/libs/stores"
 
 const ConfirmModal = () => {
   const { illustrator, title, message, isVisible, onConfirm, onCancel } =
