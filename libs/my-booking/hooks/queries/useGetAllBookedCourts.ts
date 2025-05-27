@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BookingService } from "../services/BookingService";
+import { BookingService } from "../../services/BookingService";
 
 export const useGetAllBookedCourts = (date: string) => {
   return useQuery({

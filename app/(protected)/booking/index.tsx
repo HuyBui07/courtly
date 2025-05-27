@@ -7,9 +7,10 @@ import ActionButton from "@/libs/my-booking/components/ActionButton";
 import Header from "@/libs/home/components/Header";
 import SegmentedButton from "@/libs/my-booking/components/SegmentedButton";
 import CalendarComponent from "@/libs/my-booking/components/CalendarComponent";
-import { useGetUserBookings } from "@/libs/my-booking/hooks/useGetUserBookings";
+import { useGetUserBookings } from "@/libs/my-booking/hooks/queries/useGetUserBookings";
 import { Booking } from "@/libs/my-booking/types/Booking";
 import LottieView from "lottie-react-native";
+import { BOTTOM_TAB_BAR_HEIGHT } from "@/libs/commons/design-system/constants";
 
 const BookingScreen = () => {
   const [time, setTime] = useState("upcoming");
@@ -30,7 +31,12 @@ const BookingScreen = () => {
   };
 
   return (
-    <View style={{ height: "100%", backgroundColor: "white" }}>
+    <View
+      style={{
+        height: "100%",
+        backgroundColor: "white",
+      }}
+    >
       <Header headTitle="My Bookings" />
 
       <SegmentedButton selected={time} setSelected={setTime} />
@@ -57,8 +63,12 @@ const BookingScreen = () => {
 
       <ScrollView
         onScroll={onScroll}
-        style={{ width: "100%", padding: 16 }}
-        contentContainerStyle={{ gap: 16 }}
+        style={{
+          width: "100%",
+          paddingHorizontal: 16,
+          marginTop: 16,
+        }}
+        contentContainerStyle={{ gap: 16, paddingBottom: BOTTOM_TAB_BAR_HEIGHT * 2 + 20 }}
         showsVerticalScrollIndicator={false}
       >
         {isLoading && (
@@ -75,7 +85,7 @@ const BookingScreen = () => {
         )}
         {!isLoading &&
           renderBookings()?.map((booking: Booking) => (
-            <CalendarComponent booking={booking} />
+            <CalendarComponent key={booking.court_id + booking.start_time} booking={booking} />
           ))}
       </ScrollView>
 

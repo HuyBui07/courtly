@@ -7,7 +7,7 @@ import LottieView from "lottie-react-native";
 
 const CheckOut = () => {
   const router = useRouter();
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(true);
 
   const [paymentUrl, setPaymentUrl] = useState("");
   // const paymentUrl = "http://192.168.1.21:8080/create-payment";
@@ -32,30 +32,24 @@ const CheckOut = () => {
 
   return (
     <>
-      <WebView
+      {/* <WebView
         webviewDebuggingEnabled
         source={{ uri: paymentUrl }}
         onNavigationStateChange={handleNavigationStateChange}
         startInLoadingState={true}
-      />
-      <Portal>
-        <Modal visible={visible}>
-          <LottieView
-            source={require("../../../assets/images/party_popper.json")}
-            autoPlay
-            loop={false}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: "absolute",
-              zIndex: 2,
-            }}
-          />
-          <View>
-            <Text>Successful!</Text>
-          </View>
-        </Modal>
-      </Portal>
+      /> */}
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'white'}}>
+        <LottieView
+          source={require("../../../assets/images/party_popper.json")}
+          autoPlay
+          loop={false}
+          style={{
+            width: 200,
+            height: 200,
+          }}
+        />
+        <Text style={{fontSize: 24, marginTop: 20}}>Successful!</Text>
+      </View>
     </>
   );
 };

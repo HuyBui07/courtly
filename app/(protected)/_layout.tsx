@@ -3,6 +3,7 @@ import { FontAwesome, Entypo } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet } from "react-native";
 import { colors } from "../../libs/commons/design-system/colors";
+import { BOTTOM_TAB_BAR_HEIGHT } from "@/libs/commons/design-system/constants";
 
 export default function RootLayout() {
   const segments = useSegments();
@@ -25,7 +26,7 @@ export default function RootLayout() {
         },
         tabBarStyle: {
           position: "absolute",
-          height: 60,
+          height: BOTTOM_TAB_BAR_HEIGHT,
           marginBottom: 10,
           marginHorizontal: 10,
           borderRadius: 50,

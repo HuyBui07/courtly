@@ -7,15 +7,14 @@ import {
 } from "react-native-paper";
 import { useFonts } from "expo-font";
 import AppLoading from "expo-app-loading";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { enableLayoutAnimations } from "react-native-reanimated";
 
 import NotificationModal from "@/libs/commons/design-system/components/Modal/NotificationModal";
 import LoadingCircle from "@/libs/commons/design-system/components/LoadingCircle";
+import { queryClient } from "@/libs/commons/utils";
 
 enableLayoutAnimations(true);
-
-const queryClient = new QueryClient();
 
 const fontConfig = {
   fontFamily: "Poppins",
