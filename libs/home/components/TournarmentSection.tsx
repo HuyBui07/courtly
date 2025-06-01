@@ -1,3 +1,4 @@
+import React from "react";
 import { View, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
@@ -5,8 +6,12 @@ import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 
 import TournamentView from "@/libs/commons/design-system/components/TournamentView";
+import { useGetTournaments } from "../hooks/queries/useGetTournaments";
+import { Tournament } from "../models/TournamentModel";
 
 const TournarmentSection = () => {
+  const { data: tournaments } = useGetTournaments();
+  
   return (
     <>
       <View
@@ -39,10 +44,14 @@ const TournarmentSection = () => {
           paddingBottom: 8,
         }}
       >
-        <TournamentView />
-        <TournamentView />
-        <TournamentView />
-        <TournamentView />
+        {tournaments?.map((tournament: Tournament) => (
+          <TournamentView
+            key={tournament._id}
+            tour_id={tournament._id}
+            deadline={tournament.deadline}
+            type={tournament.type}
+          />
+        ))}
       </ScrollView>
     </>
   );

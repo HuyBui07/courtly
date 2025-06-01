@@ -31,9 +31,10 @@ func AuthRoutes() {
 
 
 	//
+	http.HandleFunc("/tournament/getAll", controllers.GetAllTournamentsHandler)
 	http.HandleFunc("/tournament/create", controllers.CreateTournamentHandler)
 	http.HandleFunc("/tournament/register", controllers.RegisterTournamentHandler)
-	http.HandleFunc("/tournament/getAll", controllers.GetAthletesByTournamentHandler)
+	http.HandleFunc("/tournament/getAllAthletes", controllers.GetAthletesByTournamentHandler)
 	http.HandleFunc("/tournament/cancel", controllers.CancelTournamentRegistrationHandler)
 
 }

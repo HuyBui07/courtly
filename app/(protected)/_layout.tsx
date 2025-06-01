@@ -10,7 +10,10 @@ export default function RootLayout() {
   console.log("segments", segments);
 
   const hideTabBar = segments.some(
-    (segment) => segment === "book-court" || segment === "check-out"
+    (segment) =>
+      segment === "book-court" ||
+      segment === "check-out" ||
+      segment === "tournament"
   );
 
   return (

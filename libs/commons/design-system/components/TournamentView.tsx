@@ -2,11 +2,37 @@
 import { styles, textStyles } from "@/libs/commons/design-system/styles";
 import FlipTimer from "@/libs/home/components/FlipTimer";
 
-import { View, Text, ImageBackground } from "react-native";
+import { Text, ImageBackground, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 
-const TournamentView = () => {
+interface TournamentViewProps {
+  tour_id: string;
+  deadline: string;
+  type: string;
+}
+
+const TournamentView = ({ tour_id, deadline, type }: TournamentViewProps) => {
+  const router = useRouter();
+
+  const now = new Date();
+  const deadlineDate = new Date(deadline);
+
+  const remainingSeconds = Math.max(
+    0,
+    Math.floor((deadlineDate.getTime() - now.getTime()) / 1000)
+  );
+
+  const getImage = () => {
+    if (type === "single") {
+      return require("../../../../assets/images/levels/single.png");
+    } else {
+      return require("../../../../assets/images/levels/doubles.png");
+    }
+  };
+
   return (
-    <View
+    <TouchableOpacity
+      onPress={() => router.push(`/home/tournament/${tour_id}`)}
       style={{
         ...styles.container,
         width: 200,
@@ -16,8 +42,12 @@ const TournamentView = () => {
       }}
     >
       <ImageBackground
-        source={require("../../../../assets/images/levels/a-level.png")}
-        style={{ width: "100%", height: "100%", justifyContent: "space-between" }}
+        source={getImage()}
+        style={{
+          width: "100%",
+          height: "100%",
+          justifyContent: "space-between",
+        }}
       >
         <Text
           style={{
@@ -27,12 +57,12 @@ const TournamentView = () => {
             paddingHorizontal: 16,
           }}
         >
-          A
+          {type === "single" ? "S" : "D"}
         </Text>
 
-        <FlipTimer seconds={3600000}/>
+        <FlipTimer seconds={remainingSeconds} />
       </ImageBackground>
-    </View>
+    </TouchableOpacity>
   );
 };
 

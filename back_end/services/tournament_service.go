@@ -11,6 +11,28 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func GetAllTournaments() ([]models.Tournament, error) {
+	collection := config.GetCollection("Tournaments")
+
+	var tournaments []models.Tournament
+	cursor, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+	
+	for cursor.Next(context.TODO()) {
+		var tournament models.Tournament
+		if err := cursor.Decode(&tournament); err != nil {
+			return nil, err
+		}
+		tournaments = append(tournaments, tournament)
+	}
+
+	return tournaments, nil
+}
+
+
 func CreateTournament(name, description, poster, tType string, deadline time.Time, period []time.Time, scale int) error {
 	collection := config.GetCollection("Tournaments")
 

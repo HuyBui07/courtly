@@ -19,9 +19,10 @@ import (
 )
 
 type BookingRequest struct {
-	CourtID   int32  `json:"court_id"`
-	StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
-	EndTime   string `json:"end_time"`
+	CourtID           int32                  `json:"court_id"`
+	StartTime         string                 `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
+	EndTime           string                 `json:"end_time"`
+	AdditionalServices []models.AdditionalService `json:"additional_services,omitempty"`
 }
 
 func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,10 +69,11 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		orders = append(orders, services.BookingOrder{
-			CourtID:   req.CourtID,
-			UserID:    user.ID.Hex(),
-			StartTime: startTime,
-			EndTime:   endTime,
+			CourtID:           req.CourtID,
+			UserID:           user.ID.Hex(),
+			StartTime:        startTime,
+			EndTime:          endTime,
+			AdditionalServices: req.AdditionalServices,
 		})
 	}
 
@@ -112,10 +114,10 @@ func GetUserBookingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if upcomingBookings == nil {
-		upcomingBookings = []models.CourtBooking{}
+		upcomingBookings = []models.CourtBookingResponse{}
 	}
 	if pastBookings == nil {
-		pastBookings = []models.CourtBooking{}
+		pastBookings = []models.CourtBookingResponse{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -169,7 +171,7 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	// Trả về danh sách booking dưới dạng JSON
@@ -204,7 +206,7 @@ func GetAllBookingsOnASpecificDateHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	// Create response objects with additional fields
@@ -247,7 +249,7 @@ func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

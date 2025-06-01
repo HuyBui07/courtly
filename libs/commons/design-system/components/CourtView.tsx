@@ -3,6 +3,7 @@ import { Text } from "react-native-paper";
 import { colors } from "../colors";
 import { textStyles } from "../styles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Booking } from "@/libs/my-booking/types/Booking";
 
 const CourtLine = ({
   court,
@@ -15,7 +16,7 @@ const CourtLine = ({
     <View
       style={{
         justifyContent: "center",
-        gap: 16
+        gap: 16,
       }}
     >
       <Text style={{ ...textStyles.body, fontSize: 20, fontWeight: "bold" }}>
@@ -30,7 +31,19 @@ const CourtLine = ({
   );
 };
 
-const CourtView = () => {
+const CourtView = ({ booking }: { booking: Booking }) => {
+  const startTime = new Date(booking.start_time);
+  const dayName = startTime.toLocaleString("en-US", { weekday: "short" });
+  const dayNum = startTime.getDate();
+  const time = startTime.toLocaleString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+  const endTime = new Date(booking.end_time);
+  const durationMs = endTime.getTime() - startTime.getTime();
+  const durationHours = Math.round(durationMs / (1000 * 60 * 60));
+  const duration = `${durationHours} hour${durationHours > 1 ? "s" : ""}`;
   return (
     <View
       style={{
@@ -62,18 +75,18 @@ const CourtView = () => {
           variant="titleLarge"
           style={{ ...textStyles.title, color: "white" }}
         >
-          Mon, 12
+          {dayName}, {dayNum}
         </Text>
 
         <Text
           variant="bodyMedium"
           style={{ ...textStyles.body, color: "white" }}
         >
-          10:00 AM
+          {time}
         </Text>
       </View>
 
-      <CourtLine court="Court 1" duration="1 hour" />
+      <CourtLine court={`Court ${booking.court_id}`} duration={`${duration}`} />
     </View>
   );
 };
