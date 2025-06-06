@@ -22,6 +22,7 @@ type BookingOrder struct {
 }
 
 func CreateCourtBooking(orders []BookingOrder) error {
+	fmt.Println("CreateCourtBooking")
 	collection := config.GetCollection("CourtBookings")
 	courtsCollection := config.GetCollection("Courts")
 	usersCollection := config.GetCollection("Users")
@@ -100,10 +101,13 @@ func GetUserBookings(userId string) ([]models.CourtBookingResponse, []models.Cou
 			return nil, nil, errors.New("failed to decode booking")
 		}
 		// Convert booking times to UTC for consistent comparison
-		now := time.Now().UTC()
+		now := time.Now().UTC().Add(7 * time.Hour)
 		bookingStart := booking.StartTime.UTC()
 
 		if bookingStart.After(now) {
+			fmt.Println("bookingStart: ", bookingStart)
+			fmt.Println("now: ", now)
+
 			upcomingBookings = append(upcomingBookings, booking)
 		} else {
 			pastBookings = append(pastBookings, booking)
@@ -349,4 +353,14 @@ func CancelBookingByID(bookingID string, userID string) error {
 	}
 
 	return nil
+}
+
+func PostUnpaidBooking(unpaidBooking models.UnpaidBooking) error {
+	collection := config.GetCollection("UnpaidBookings")
+	
+	// Generate a new ObjectID
+	unpaidBooking.ID = primitive.NewObjectID()
+	
+	_, err := collection.InsertOne(context.TODO(), unpaidBooking)
+	return err
 }

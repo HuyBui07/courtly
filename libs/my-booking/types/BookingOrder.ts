@@ -4,8 +4,11 @@ export type AdditionalService = {
 };
 
 export type BookingOrder = {
-  court_id: number;
-  start_time: string;
-  end_time: string;
+  courts: {
+    court_id: number;
+    start_time: string;
+    end_time: string;
+  }[];
   additional_services?: AdditionalService[];
+  total_price: number;
 };

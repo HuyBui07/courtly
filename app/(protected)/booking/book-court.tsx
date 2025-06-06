@@ -74,7 +74,7 @@ const BookCourt = () => {
       setCourt3BookedIndex(court3);
       setCourt4BookedIndex(court4);
     }
-  }, [bookedCourts]);
+  }, [bookedCourts, date]);
 
   const [selectedTimeBlockIndexesCourt1, setSelectedTimeBlockIndexesCourt1] =
     useState<number[]>([]);
@@ -157,6 +157,7 @@ const BookCourt = () => {
 
           <InformationBar />
           <BookingCalendar
+            isToday={date ? new Date(date as Date).toDateString() === new Date().toDateString() : false}
             selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
             setSelectedTimeBlockIndexesCourt1={setSelectedTimeBlockIndexesCourt1}
             bookedCourt1={court1BookedIndex}

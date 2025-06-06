@@ -13,6 +13,7 @@ export const InformationLine = ({
       <View
         style={{
           flexDirection: "row",
+          pointerEvents: "box-none",
         }}
       >
         <Text style={[textStyles.body, { marginRight: 16 }]}>{title}:</Text>

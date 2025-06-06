@@ -7,4 +7,5 @@ import (
 
 func PaymentRoutes() {
 	http.HandleFunc("/create-payment", controllers.CreatePaymentHandler)
+	http.HandleFunc("/success", controllers.SuccessPaymentHandler)
 }

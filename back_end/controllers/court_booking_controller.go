@@ -19,9 +19,11 @@ import (
 )
 
 type BookingRequest struct {
-	CourtID           int32                  `json:"court_id"`
-	StartTime         string                 `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
-	EndTime           string                 `json:"end_time"`
+	Courts []struct {
+		CourtID   int32  `json:"court_id"`
+		StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
+		EndTime   string `json:"end_time"`
+	} `json:"courts"`
 	AdditionalServices []models.AdditionalService `json:"additional_services,omitempty"`
 }
 
@@ -31,8 +33,8 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requests []BookingRequest
-	if err := json.NewDecoder(r.Body).Decode(&requests); err != nil {
+	var bookingRequest BookingRequest
+	if err := json.NewDecoder(r.Body).Decode(&bookingRequest); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -50,9 +52,10 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var orders []services.BookingOrder
-	for _, req := range requests {
-		// Check if start time is in the past
-		startTime, err := time.Parse(time.RFC3339, req.StartTime)
+	// Find the earliest court booking time
+	var earliestStartTime time.Time
+	for _, court := range bookingRequest.Courts {
+		startTime, err := time.Parse(time.RFC3339, court.StartTime)
 		if err != nil {
 			http.Error(w, "Invalid start time format", http.StatusBadRequest)
 			return
@@ -62,19 +65,32 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		endTime, err := time.Parse(time.RFC3339, req.EndTime)
+		if earliestStartTime.IsZero() || startTime.Before(earliestStartTime) {
+			earliestStartTime = startTime
+		}
+	}
+
+	for _, court := range bookingRequest.Courts {
+		startTime, _ := time.Parse(time.RFC3339, court.StartTime)
+		endTime, err := time.Parse(time.RFC3339, court.EndTime)
 		if err != nil {
 			http.Error(w, "Invalid end time format", http.StatusBadRequest)
 			return
 		}
 
-		orders = append(orders, services.BookingOrder{
-			CourtID:           req.CourtID,
-			UserID:           user.ID.Hex(),
-			StartTime:        startTime,
-			EndTime:          endTime,
-			AdditionalServices: req.AdditionalServices,
-		})
+		order := services.BookingOrder{
+			CourtID:    court.CourtID,
+			UserID:     user.ID.Hex(),
+			StartTime:  startTime,
+			EndTime:    endTime,
+		}
+
+		// Attach additional services to the order with earliest start time
+		if startTime.Equal(earliestStartTime) {
+			order.AdditionalServices = bookingRequest.AdditionalServices
+		}
+
+		orders = append(orders, order)
 	}
 
 	err = services.CreateCourtBooking(orders)

@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 // components
-import { ScrollView, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 import ActionButton from "@/libs/my-booking/components/ActionButton";
 import Header from "@/libs/home/components/Header";
@@ -17,11 +17,11 @@ const BookingScreen = () => {
   const { data: bookings, isLoading } = useGetUserBookings();
   // Action button
   const [isABExtended, setIsABExtended] = useState(true);
-  const onScroll = ({ nativeEvent }: any) => {
+  const onScroll = useCallback(({ nativeEvent }: any) => {
     const currentScrollPosition =
       Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
     setIsABExtended(currentScrollPosition <= 0);
-  };
+  }, []);
 
   const renderBookings = () => {
     if (time === "upcoming") {
@@ -33,7 +33,7 @@ const BookingScreen = () => {
   return (
     <View
       style={{
-        height: "100%",
+        flex: 1,
         backgroundColor: "white",
       }}
     >
@@ -61,33 +61,46 @@ const BookingScreen = () => {
         </View>
       )}
 
-      <ScrollView
+      <FlatList
         onScroll={onScroll}
+        // scrollEventThrottle={32}
         style={{
-          width: "100%",
-          paddingHorizontal: 16,
+          flex: 1,
           marginTop: 16,
         }}
-        contentContainerStyle={{ gap: 16, paddingBottom: BOTTOM_TAB_BAR_HEIGHT * 2 + 20 }}
+        contentContainerStyle={{
+          gap: 16,
+          paddingHorizontal: 16,
+          flexGrow: 1,
+          paddingBottom: BOTTOM_TAB_BAR_HEIGHT * 2 + 20,
+        }}
         showsVerticalScrollIndicator={false}
-      >
-        {isLoading && (
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <LottieView
-              source={require("@/assets/gifs/loading.json")}
-              autoPlay
-              loop
-              style={{ width: 100, height: 100 }}
-            />
-          </View>
+        data={isLoading ? [] : renderBookings()}
+        renderItem={({ item: booking }) => (
+          <CalendarComponent
+            key={booking.court_id + booking.start_time}
+            booking={booking}
+          />
         )}
-        {!isLoading &&
-          renderBookings()?.map((booking: Booking) => (
-            <CalendarComponent key={booking.court_id + booking.start_time} booking={booking} />
-          ))}
-      </ScrollView>
+        ListEmptyComponent={
+          isLoading ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <LottieView
+                source={require("@/assets/gifs/loading.json")}
+                autoPlay
+                loop
+                style={{ width: 100, height: 100 }}
+              />
+            </View>
+          ) : null
+        }
+      />
 
       <ActionButton isExtended={isABExtended} />
     </View>

@@ -37,5 +37,6 @@ const styles = StyleSheet.create({
     right: 16,
     position: "absolute",
     backgroundColor: colors.primary,
+    pointerEvents: "box-none",
   },
 });

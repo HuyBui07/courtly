@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 import Animated, {
   LinearTransition,
-  StretchInY,
-  StretchOutY,
 } from "react-native-reanimated";
 
 import { textStyles } from "@/libs/commons/design-system/styles";
@@ -28,6 +26,7 @@ const StateText = ({ state }: { state: string }) => {
         top: 8,
         right: 16,
         opacity: 0.5,
+        pointerEvents: "box-none",
       }}
     >
       <Text
@@ -62,7 +61,6 @@ const formatTime = (start: string, end: string) => {
 };
 
 const CalendarComponent = ({ booking }: { booking: Booking }) => {
-  const [isExtended, setIsExtended] = useState(false);
   const { mutate: cancelBooking } = useCancelBookingState();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
@@ -83,68 +81,36 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
       duration: `${durationHours} hour${durationHours > 1 ? "s" : ""}`,
       price: price.toString() + ".000 VND",
       status: booking.state,
+      additionalServices: booking.additional_services,
+      onCancel: !isPast ? () => {
+        cancelBooking(booking._id)
+        CourtDetailsModalController.hide()
+      } : undefined
     });
   };
 
   return (
     <AnimatedTouchableOpacity
       layout={LinearTransition.springify()}
-      onPress={() => setIsExtended(!isExtended)}
-      disabled={booking.state !== "Booked"}
-      style={[styles.container, isPast && { backgroundColor: "#F5F5F5" }]}
+      onPress={showDetailsModal}
+      disabled={booking.state !== "Booked" || isPast}
+      style={[
+        styles.container,
+        (isPast || booking.state === "Cancelled") && {
+          backgroundColor: "#F5F5F5",
+        },
+      ]}
     >
       {!isPast && <StateText state={booking.state} />}
 
       <InformationLine title="Court" value={booking.court_id.toString()} />
       <InformationLine title="Date" value={formattedDate} />
       <InformationLine title="Time" value={formattedTime} />
-
-      {isExtended && (
-        <Animated.View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            marginVertical: 8,
-            justifyContent: "space-between",
-          }}
-          entering={StretchInY}
-          exiting={StretchOutY}
-        >
-          <Button
-            mode="outlined"
-            labelStyle={{ fontWeight: "bold" }}
-            style={{
-              width: isPast ? "100%" : "50%",
-              borderRadius: 12,
-              borderColor: colors.primary,
-            }}
-            onPress={showDetailsModal}
-          >
-            Details
-          </Button>
-          {!isPast && (
-            <Button
-              mode="contained"
-              buttonColor="red"
-              textColor="white"
-              labelStyle={{ fontWeight: "bold" }}
-              style={{ width: "50%", borderRadius: 12 }}
-              onPress={() => {
-                console.log("booking", booking);
-                console.log(booking._id);
-                cancelBooking(booking._id);
-              }}
-            >
-              Cancell
-            </Button>
-          )}
-        </Animated.View>
-      )}
     </AnimatedTouchableOpacity>
   );
 };
 
-export default CalendarComponent;
+export default React.memo(CalendarComponent);
 
 const styles = StyleSheet.create({
   container: {

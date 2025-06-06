@@ -37,4 +37,9 @@ func AuthRoutes() {
 	http.HandleFunc("/tournament/getAllAthletes", controllers.GetAthletesByTournamentHandler)
 	http.HandleFunc("/tournament/cancel", controllers.CancelTournamentRegistrationHandler)
 
+	// Pickup
+	http.HandleFunc("/pickup/create", controllers.CreatePickupHandler)
+	http.HandleFunc("/pickup/getAll", controllers.GetAllPickupsHandler)
+	http.HandleFunc("/pickup/join", controllers.JoinPickupHandler)
+
 }

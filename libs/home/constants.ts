@@ -1,3 +1,7 @@
 import { API_BASE_URL } from '@/libs/commons/constants'
 
 export const TOURNAMENT_URL = `${API_BASE_URL}/tournament/getAll`
+
+// Pickup
+export const PICKUP_URL = `${API_BASE_URL}/pickup/getAll`
+export const JOIN_PICKUP_URL = `${API_BASE_URL}/pickup/join`

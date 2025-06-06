@@ -1,3 +1,4 @@
+import { AdditionalService } from "@/libs/my-booking/types/BookingOrder";
 import { create } from "zustand";
 
 interface CourtDetailsModalState {
@@ -10,6 +11,8 @@ interface CourtDetailsModalState {
     duration: string;
     price: string;
     status: string;
+    additionalServices?: AdditionalService[];
+    onCancel?: () => void;
   };
 }
 
@@ -26,6 +29,8 @@ export const useCourtDetailsModalStore = create<CourtDetailsModalState>(
       duration: "",
       price: "",
       status: "",
+      additionalServices: [],
+      onCancel: undefined,
     },
   })
 );
@@ -38,6 +43,8 @@ export const CourtDetailsModalController = {
     duration: string;
     price: string;
     status: string;
+    additionalServices?: AdditionalService[];
+    onCancel?: () => void;
   }) => useCourtDetailsModalStore.setState({ isVisible: true, details }),
   hide: () => useCourtDetailsModalStore.setState({ isVisible: false }),
 };

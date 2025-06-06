@@ -1,11 +1,15 @@
+import React, { useState, useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import { Text } from "react-native-paper";
 
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 import PickupView from "@/libs/commons/design-system/components/PickupView";
+import { useGetPickups } from "../hooks/queries/useGetPickups";
+import PickupModel from "../models/PickupModel";
 
 const PickupSection = () => {
+  const { data: pickups } = useGetPickups();
   return (
     <>
       <View
@@ -38,10 +42,9 @@ const PickupSection = () => {
         }}
         style={{ overflow: "visible" }}
       >
-        <PickupView />
-        <PickupView />
-        <PickupView />
-        <PickupView />
+        {pickups?.map((pickup: PickupModel) => (
+          <PickupView key={pickup.id} {...pickup} />
+        ))}
       </ScrollView>
     </>
   );
