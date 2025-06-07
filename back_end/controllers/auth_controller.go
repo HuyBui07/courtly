@@ -134,3 +134,29 @@ func GetAllClientDataHandler(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(clients)
 }
+
+func GetUserInfoByIDHandler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "application/json")
+    token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	userID := r.URL.Query().Get("user_id")
+	if userID == "" {
+		http.Error(w, "user_id is required", http.StatusBadRequest)
+		return
+	}
+
+	user, err := services.GetUserInfoByID(userID)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"name": user,
+	})
+}

@@ -14,6 +14,7 @@ import NotificationModal from "@/libs/commons/design-system/components/Modal/Not
 import { CourtDetailsModal } from "@/libs/my-booking/components/CourtDetailsModal";
 import LoadingCircle from "@/libs/commons/design-system/components/LoadingCircle";
 import { queryClient } from "@/libs/commons/utils";
+import { PickupDetailsModal } from "@/libs/home/components/PickupDetailsModal";
 
 enableLayoutAnimations(true);
 
@@ -52,6 +53,7 @@ export default function RootLayout() {
 
           <NotificationModal />
           <CourtDetailsModal />
+          <PickupDetailsModal />
           <LoadingCircle />
         </View>
       </PaperProvider>

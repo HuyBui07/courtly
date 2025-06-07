@@ -30,6 +30,7 @@ const Home = () => {
         <TournarmentSection />
         <PickupSection />
       </View>
+
     </ScrollView>
   );
 };

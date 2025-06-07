@@ -5,7 +5,6 @@ import (
 	"back_end/models"
 	"context"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -30,7 +29,14 @@ func CreatePickup(pickup *models.Pickup, userID string) error {
 	if booking.UserID != userID {
 		return errors.New("unauthorized: only the user who booked the court can create a pickup game for it")
 	}
-	fmt.Println(pickup.ParticipantIDs)
+
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
+
+	pickup.UserID = userObjID
+
 	_, err = collection.InsertOne(context.TODO(), pickup)
 	if err != nil {
 		return err

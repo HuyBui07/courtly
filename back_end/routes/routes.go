@@ -13,7 +13,7 @@ func AuthRoutes() {
 	http.HandleFunc("/getAllUsers", controllers.GetAllUserDataHandler)
 	http.HandleFunc("/getAllAdmins", controllers.GetAllAdminDataHandler)
 	http.HandleFunc("/getAllClients", controllers.GetAllClientDataHandler)
-
+	http.HandleFunc("/getUserInfoByID", controllers.GetUserInfoByIDHandler)
 	//
 	http.HandleFunc("/createCourt", controllers.CreateCourtHandler)
 

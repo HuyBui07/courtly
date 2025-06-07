@@ -1,14 +1,18 @@
 // components
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { textStyles, styles as GlobalStyles } from "../styles";
 import PickupModel from "@/libs/home/models/PickupModel";
 import { colors } from "../colors";
 import { Icon } from "react-native-paper";
+import { useGetUserInfo } from "@/libs/home/hooks/queries/useGetUserInfo";
+import { PickupDetailsModalController } from "@/libs/home/store/usePickupDetailsModalStore";
 
 const PickupView = (pickup: PickupModel) => {
   console.log(pickup);
+  const { data: userInfo } = useGetUserInfo(pickup.user_id);
   return (
-    <View
+    <TouchableOpacity
+      onPress={() => PickupDetailsModalController.show(pickup)}
       style={styles.container}
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -17,23 +21,24 @@ const PickupView = (pickup: PickupModel) => {
           style={styles.avatar}
         />
         <Text style={{ ...textStyles.body, fontWeight: "bold" }}>
-          Lebron James
+          {userInfo?.name}
         </Text>
       </View>
 
-      <Text style={{ ...textStyles.body, fontWeight: "bold" }}>Level: {pickup.pickup_level}</Text>
-
-      <Text style={{ ...textStyles.body }}>
-        {pickup.message}
+      <Text style={{ ...textStyles.body, fontWeight: "bold" }}>
+        Level: {pickup.pickup_level}
       </Text>
+
+      <Text style={{ ...textStyles.body }}>{pickup.message}</Text>
 
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Icon source="account-group" size={20} color={colors.primary} />
         <Text style={{ ...textStyles.body, fontWeight: "bold" }}>
-          {pickup.participant_ids.length} / {pickup.maximum_pickup}
+          {pickup.participant_ids ? pickup.participant_ids.length : 0} /{" "}
+          {pickup.maximum_pickup}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

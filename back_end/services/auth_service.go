@@ -209,3 +209,13 @@ func GetAllClients(token string) ([]models.User, error) {
     return clients, nil
 }
 
+func GetUserInfoByID(userID string) (string, error) {
+	collection := config.GetCollection("Users")
+	var user models.User
+	err := collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&user)
+	if err != nil {
+		return "", errors.New("user not found")
+	}
+	return *user.Email, nil
+}
+
