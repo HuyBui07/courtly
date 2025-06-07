@@ -5,6 +5,7 @@ import (
 	"back_end/models"
 	"context"
 	"errors"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -45,7 +46,7 @@ func CreatePickup(pickup *models.Pickup, userID string) error {
 	return nil
 }
 
-func GetBookingDetailsByBookingID(bookingID string) (*models.CourtBookingResponse, error) {
+func GetBookingDetailsByBookingID(bookingID string) (map[string]interface{}, error) {
 	collection := config.GetCollection("CourtBookings")
 
 	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
@@ -53,26 +54,50 @@ func GetBookingDetailsByBookingID(bookingID string) (*models.CourtBookingRespons
 		return nil, err
 	}
 
-	var booking models.CourtBookingResponse
-	err = collection.FindOne(context.TODO(), bson.M{"_id": bookingObjID}).Decode(&booking)
+	var booking models.CourtBooking
+	err = collection.FindOne(context.TODO(), bson.M{
+		"_id": bookingObjID,
+	}).Decode(&booking)
 	if err != nil {
 		return nil, err
 	}
 
-	return &booking, nil
+	// Format the time string
+	timeStr := booking.StartTime.Format("15:04") + " - " + booking.EndTime.Format("15:04")
+	
+	// Calculate duration in minutes
+	duration := booking.EndTime.Sub(booking.StartTime).Hours()
+
+	// Create custom response
+	response := map[string]interface{}{
+		"date":     booking.StartTime.Format("2006-01-02"),
+		"time":     timeStr,
+		"duration": int(duration),
+	}
+
+	return response, nil
 }
 
-func GetAllPickups() ([]models.Pickup, error) {
+func GetAllPickups(userID primitive.ObjectID) ([]models.Pickup, error) {
 	collection := config.GetCollection("Pickups")
 
 	filter := bson.M{
-		"$expr": bson.M{
-			"$ne": []interface{}{
-				bson.M{"$ifNull": []interface{}{
-					bson.M{"$size": bson.M{"$ifNull": []interface{}{"$participant_ids", []interface{}{}}}},
-					0,
-				}},
-				"$maximum_pickup",
+		"$and": []bson.M{
+			{
+				"user_id": bson.M{
+					"$ne": userID,
+				},
+			},
+			{
+				"$expr": bson.M{
+					"$ne": []interface{}{
+						bson.M{"$ifNull": []interface{}{
+							bson.M{"$size": bson.M{"$ifNull": []interface{}{"$participant_ids", []interface{}{}}}},
+							0,
+						}},
+						"$maximum_pickup",
+					},
+				},
 			},
 		},
 	}

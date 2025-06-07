@@ -11,10 +11,12 @@ import {
 } from "@/libs/home/store/usePickupDetailsModalStore";
 import { colors } from "@/libs/commons/design-system/colors";
 import { useGetUserInfo } from "../hooks/queries/useGetUserInfo";
+import { useGetPickupDetails } from "../hooks/queries/useGetPickupDetails";
 
 export const PickupDetailsModal = () => {
   const { isVisible, details } = usePickupDetailsModalStore();
   const { data: userInfo } = useGetUserInfo(details.user_id);
+  const { data: pickupDetails } = useGetPickupDetails(details.court_booking_id);
   return (
     <Modal
       isVisible={isVisible}
@@ -50,18 +52,32 @@ export const PickupDetailsModal = () => {
       />
 
       <InformationLine title="Level" value={details.pickup_level} />
+      <InformationLine
+        title="Date"
+        value={
+          pickupDetails?.date
+            ? new Date(pickupDetails.date).toLocaleDateString("en-GB")
+            : ""
+        }
+      />
+      <InformationLine title="Time" value={pickupDetails?.time} />
+      <InformationLine
+        title="Duration"
+        value={pickupDetails?.duration + " h"}
+      />
 
-      <View
-        style={{
-          alignItems: "flex-start",
-          width: "100%",
-          gap: 8,
-          backgroundColor: colors.superLightPrimary,
-          padding: 16,
-          borderRadius: 10,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <View style={styles.messageContainer}>
+        <View style={styles.bottomLeftCorner} />
+
+        {/* Top Right Corner */}
+        <View style={styles.topRightCorner} />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
           <Image
             source={{ uri: "https://randomuser.me/api/portraits/men/75.jpg" }}
             style={styles.avatar}
@@ -70,9 +86,7 @@ export const PickupDetailsModal = () => {
             {userInfo?.name}
           </Text>
         </View>
-        <Text style={{ ...textStyles.body }}>
-          "{details.message}"
-        </Text>
+        <Text style={{ ...textStyles.body }}>"{details.message}"</Text>
       </View>
 
       <View style={{ gap: 16, flexDirection: "row", width: "100%" }}>
@@ -119,5 +133,35 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 100,
+  },
+  messageContainer: {
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    width: "100%",
+    gap: 16,
+    backgroundColor: colors.superLightPrimary,
+    padding: 24,
+    paddingBottom: 28,
+    position: "relative",
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  topRightCorner: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    width: 10,
+    height: 10,
+    borderTopWidth: 1,
+    borderRightWidth: 1,
+  },
+  bottomLeftCorner: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    width: 10,
+    height: 10,
+    borderBottomWidth: 1,
+    borderLeftWidth: 1,
   },
 });

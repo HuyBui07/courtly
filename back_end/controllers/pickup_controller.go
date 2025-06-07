@@ -78,13 +78,13 @@ func GetAllPickupsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
 		return
 	}
-	_, err := services.GetUserDataByToken(token)
+	user, err := services.GetUserDataByToken(token)
 	if err != nil {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	pickups, err := services.GetAllPickups()
+	pickups, err := services.GetAllPickups(user.ID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -125,3 +125,36 @@ func JoinPickupHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Joined pickup successfully"))
 }	
+
+func GetPickupDetailsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	_, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
+	bookingID := r.URL.Query().Get("booking_id")
+	if bookingID == "" {
+		http.Error(w, "booking_id is required", http.StatusBadRequest)
+		return
+	}
+
+	booking, err := services.GetBookingDetailsByBookingID(bookingID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(booking)
+}

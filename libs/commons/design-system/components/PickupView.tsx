@@ -31,7 +31,13 @@ const PickupView = (pickup: PickupModel) => {
 
       <Text style={{ ...textStyles.body }}>{pickup.message}</Text>
 
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
         <Icon source="account-group" size={20} color={colors.primary} />
         <Text style={{ ...textStyles.body, fontWeight: "bold" }}>
           {pickup.participant_ids ? pickup.participant_ids.length : 0} /{" "}

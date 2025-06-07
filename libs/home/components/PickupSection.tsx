@@ -7,9 +7,12 @@ import { textStyles } from "@/libs/commons/design-system/styles";
 import PickupView from "@/libs/commons/design-system/components/PickupView";
 import { useGetPickups } from "../hooks/queries/useGetPickups";
 import PickupModel from "../models/PickupModel";
+import LottieView from "lottie-react-native";
+import LoadingCircleForComponents from "@/libs/commons/design-system/components/LoadingCircleForComponents";
 
 const PickupSection = () => {
-  const { data: pickups } = useGetPickups();
+  const { data: pickups, isLoading } = useGetPickups();
+  console.log(pickups);
   return (
     <>
       <View
@@ -32,20 +35,48 @@ const PickupSection = () => {
         </Text>
       </View>
 
-      <ScrollView
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          gap: 16,
-          paddingHorizontal: 12,
-          paddingBottom: 8,
-        }}
-        style={{ overflow: "visible" }}
-      >
-        {pickups?.map((pickup: PickupModel) => (
-          <PickupView key={pickup.id} {...pickup} />
-        ))}
-      </ScrollView>
+      {isLoading && <LoadingCircleForComponents />}
+      {pickups == null && (
+        <View
+          style={{
+            width: "90%",
+            backgroundColor: colors.superLightPrimary,
+            padding: 16,
+            borderRadius: 10,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 16,
+            marginVertical: 24,
+            marginHorizontal: "auto",
+          }}
+        >
+          <LottieView
+            source={require("@/assets/gifs/empty_tp.json")}
+            autoPlay
+            loop
+            style={{ width: 150, height: 150 }}
+          />
+          <Text variant="bodyMedium" style={{ ...textStyles.body }}>
+            No pickup games found!
+          </Text>
+        </View>
+      )}
+      {pickups?.length > 0 && !isLoading && (
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: 16,
+            paddingHorizontal: 12,
+            paddingBottom: 8,
+          }}
+          style={{ overflow: "visible" }}
+        >
+          {pickups?.map((pickup: PickupModel) => (
+            <PickupView key={pickup.id} {...pickup} />
+          ))}
+        </ScrollView>
+      )}
     </>
   );
 };

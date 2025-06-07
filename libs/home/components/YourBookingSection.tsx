@@ -67,7 +67,7 @@ const YourBookingSection = () => {
         </TouchableOpacity>
       )}
 
-      {upcomingBookedCourts?.length > 0 && (
+      {upcomingBookedCourts?.length > 0 && !isLoading && (
         <ScrollView
           horizontal={true}
           showsHorizontalScrollIndicator={false}
