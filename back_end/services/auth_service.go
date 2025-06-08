@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"back_end/config"
@@ -208,4 +209,47 @@ func GetAllClients(token string) ([]models.User, error) {
 
     return clients, nil
 }
+
+func ResetPassword(userID string, currentPassword, newPassword string) error {
+	// Tìm user theo ID
+    userCollection := config.GetCollection("Users")
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID")
+	}
+
+	var user models.User
+	err = userCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// So sánh mật khẩu hiện tại
+	err = bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(currentPassword))
+	if err != nil {
+		return fmt.Errorf("current password is incorrect")
+	}
+
+	// Hash mật khẩu mới
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("could not hash new password: %v", err)
+	}
+
+	// Cập nhật mật khẩu
+	update := bson.M{
+		"$set": bson.M{
+			"password":   string(hashedPassword),
+			"update_at":  time.Now(),
+		},
+	}
+
+	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %v", err)
+	}
+
+	return nil
+}
+
 
