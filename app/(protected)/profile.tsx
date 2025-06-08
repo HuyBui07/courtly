@@ -2,6 +2,7 @@ import * as React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { queryClient } from "@/libs/commons/utils";
 
 const ProfileScreen = () => {
   const router = useRouter();
@@ -41,7 +42,10 @@ const ProfileScreen = () => {
           icon="log-out"
           label="Logout"
           color="red"
-          onClick={() => router.dismissTo("/(auth)")}
+          onClick={() => {
+            queryClient.clear();
+            router.dismissTo("/(auth)");
+          }}
         />
       </View>
 

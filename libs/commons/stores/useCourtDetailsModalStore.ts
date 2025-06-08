@@ -15,6 +15,7 @@ interface CourtDetailsModalState {
     additionalServices?: AdditionalService[];
     onCancel?: () => void;
     isJoinable?: boolean;
+    isPickedUp?: boolean;
   };
 }
 
@@ -35,6 +36,7 @@ export const useCourtDetailsModalStore = create<CourtDetailsModalState>(
       additionalServices: [],
       onCancel: undefined,
       isJoinable: false,
+      isPickedUp: false,
     },
   })
 );
@@ -51,6 +53,7 @@ export const CourtDetailsModalController = {
     additionalServices?: AdditionalService[];
     onCancel?: () => void;
     isJoinable?: boolean;
+    isPickedUp?: boolean;
   }) => useCourtDetailsModalStore.setState({ isVisible: true, details }),
   hide: () => {
     useCourtDetailsModalStore.setState({
@@ -66,6 +69,7 @@ export const CourtDetailsModalController = {
         additionalServices: [],
         onCancel: undefined,
         isJoinable: false,
+        isPickedUp: false,
       },
     });
   },

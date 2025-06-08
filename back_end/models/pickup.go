@@ -15,4 +15,5 @@ type Pickup struct {
 	Message string `bson:"message,omitempty" json:"message,omitempty"`
 	PickupLevel string `bson:"pickup_level,omitempty" json:"pickup_level,omitempty"`
 	StartTime time.Time `bson:"start_time,omitempty" json:"start_time,omitempty"`
+	EndTime time.Time `bson:"end_time,omitempty" json:"end_time,omitempty"`
 }

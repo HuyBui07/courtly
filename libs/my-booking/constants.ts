@@ -24,3 +24,4 @@ export const CANCEL_BOOKING_URL = `${API_BASE_URL}/cancelBookCourt`;
 export const PAYMENT_SUCCESS_URL = `${API_BASE_URL}/success`;
 export const GET_USER_UPCOMING_PICKUPS_URL = `${API_BASE_URL}/pickup/getUserUpcoming`;
 export const CREATE_PICKUP_URL = `${API_BASE_URL}/pickup/create`;
+export const GET_PICKUP_PARTICIPATED_STATE_URL = `${API_BASE_URL}/pickup/getParticipatedState`;

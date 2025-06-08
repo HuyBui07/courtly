@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Button } from "react-native-paper";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { Icon } from "react-native-paper";
+import { LinearTransition } from "react-native-reanimated";
 
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
@@ -13,11 +13,10 @@ import { InformationLine } from "./InformationLine";
 import { CourtDetailsModalController } from "@/libs/commons/stores/useCourtDetailsModalStore";
 import { useCancelBookingState } from "../hooks/mutations/useCancelBookingState";
 import { Pickup } from "../types";
-import { useCreatePickup } from "../hooks/mutations/useCreatePickup";
+import { useGetPickupParticipatedState } from "../hooks/queries/useGetPickupParticipatedState";
 
 const StateText = ({ state }: { state: string }) => {
-  const color =
-    state === "Booked" || state === "Pickup" ? colors.primary : "red";
+  const color = state === "Cancelled" ? "red" : colors.primary;
 
   return (
     <View
@@ -41,9 +40,9 @@ const StateText = ({ state }: { state: string }) => {
       </Text>
       <MaterialCommunityIcons
         name={
-          state === "Booked" || state === "Pickup"
-            ? "check-circle-outline"
-            : "close-circle-outline"
+          state === "Cancelled"
+            ? "close-circle-outline"
+            : "check-circle-outline"
         }
         size={20}
         color={color}
@@ -67,8 +66,13 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
   const { mutate: cancelBooking } = useCancelBookingState();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
-
+  const { data: pickupParticipatedState } = useGetPickupParticipatedState(
+    booking._id
+  );
   const isPast = new Date(booking.end_time) < new Date();
+
+  // if the pickup_id is in the booking, then the component is picked up and this user is not the host
+  const isThisComponentPickedUp = "pickup_id" in booking;
 
   const showDetailsModal = () => {
     const startDate = new Date(booking.start_time);
@@ -88,12 +92,14 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       status: booking.state,
       additionalServices: booking.additional_services,
       isJoinable: !booking.allow_pickup,
-      onCancel: !isPast
-        ? () => {
-            cancelBooking(booking._id);
-            CourtDetailsModalController.hide();
-          }
-        : undefined,
+      isPickedUp: isThisComponentPickedUp,
+      onCancel:
+        !isPast && !isThisComponentPickedUp
+          ? () => {
+              cancelBooking(booking._id);
+              CourtDetailsModalController.hide();
+            }
+          : undefined,
     });
   };
 
@@ -112,8 +118,10 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       {!isPast && (
         <StateText
           state={
-            "pickup_id" in booking || booking?.allow_pickup
-              ? "Pickup"
+            isThisComponentPickedUp
+              ? "You've picked up"
+              : booking?.allow_pickup
+              ? `Picking up ${pickupParticipatedState?.users?.length || 0} / ${pickupParticipatedState?.maximum_pickups}`
               : booking.state
           }
         />

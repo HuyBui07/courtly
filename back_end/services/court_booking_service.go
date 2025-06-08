@@ -104,10 +104,10 @@ func GetUserBookings(userId string) ([]models.CourtBookingResponse, []models.Cou
 		}
 		// Convert booking times to UTC for consistent comparison
 		now := time.Now().UTC().Add(7 * time.Hour)
-		bookingStart := booking.StartTime.UTC()
+		bookingEnd := booking.EndTime.UTC()
 
-		if bookingStart.After(now) {
-			fmt.Println("bookingStart: ", bookingStart)
+		if bookingEnd.After(now) {
+			fmt.Println("bookingEnd: ", bookingEnd)
 			fmt.Println("now: ", now)
 
 			upcomingBookings = append(upcomingBookings, booking)

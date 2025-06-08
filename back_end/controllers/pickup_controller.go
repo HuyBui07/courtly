@@ -185,3 +185,36 @@ func GetUserUpcomingPickupsHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(pickups)
 }
+
+func GetPickupParticipatedStateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	bookingID := r.URL.Query().Get("booking_id")
+	if bookingID == "" {
+		http.Error(w, "booking_id is required", http.StatusBadRequest)
+		return
+	}
+	
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+	
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	state, err := services.GetPickupParticipatedState(bookingID, user.ID.Hex())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}	
+
+	json.NewEncoder(w).Encode(state)
+}

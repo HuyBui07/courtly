@@ -6,6 +6,7 @@ import {
   PAYMENT_SUCCESS_URL,
   GET_USER_UPCOMING_PICKUPS_URL,
   CREATE_PICKUP_URL,
+  GET_PICKUP_PARTICIPATED_STATE_URL,
 } from "../constants";
 
 import { TokenManager } from "@/libs/store/persistStore";
@@ -145,6 +146,24 @@ export const BookingService = {
         throw new Error(errorText);
       }
       return response.text();
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+
+  getPickupParticipatedState: async (bookingID: string) => {
+    try {
+      const response = await fetch(GET_PICKUP_PARTICIPATED_STATE_URL + "?booking_id=" + bookingID, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+      });
+      if (!response.ok) {
+        const errorText = (await response.text()).trim();
+        throw new Error(errorText);
+      }
+      return response.json();
     } catch (error: any) {
       throw new Error(error.message);
     }

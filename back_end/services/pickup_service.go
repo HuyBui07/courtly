@@ -38,7 +38,8 @@ func CreatePickup(pickup *models.Pickup, userID string) error {
 	}
 
 	pickup.UserID = userObjID
-	pickup.StartTime = booking.StartTime // Set the start time from the booking
+	pickup.StartTime = booking.StartTime
+	pickup.EndTime = booking.EndTime
 
 	_, err = collection.InsertOne(context.TODO(), pickup)
 	if err != nil {
@@ -117,8 +118,8 @@ func GetAllPickups(userID primitive.ObjectID) ([]models.Pickup, error) {
 				},
 			},
 			{
-				"start_time": bson.M{
-					"$gt": time.Now(),
+				"end_time": bson.M{
+					"$gt": time.Now().UTC().Add(7 * time.Hour),
 				},
 			},
 		},
@@ -225,4 +226,52 @@ func GetUserUpcomingPickups(userID string) ([]map[string]interface{}, error) {
 	}
 
 	return result, nil
+}
+
+func GetPickupParticipatedState(bookingID string, hostID string) (map[string]interface{}, error) {
+	collection := config.GetCollection("Pickups")
+
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
+	if err != nil {
+		return nil, err
+	}
+
+	var pickup models.Pickup
+	err = collection.FindOne(context.TODO(), bson.M{"court_booking_id": bookingObjID}).Decode(&pickup)
+	if err != nil {
+		return nil, err
+	}
+
+	hostObjID, err := primitive.ObjectIDFromHex(hostID)
+	if err != nil {
+		return nil, err
+	}
+
+	if pickup.UserID.Hex() != hostObjID.Hex() {
+		return nil, errors.New("unauthorized: only the host can get the pickup participated state")
+	}
+
+	usersCollection := config.GetCollection("Users")
+	var participants []map[string]string
+
+	for _, participantID := range pickup.ParticipantIDs {
+		if participantID.Hex() != hostObjID.Hex() {
+			var user struct {
+				Email string `bson:"email"`
+			}
+			err := usersCollection.FindOne(context.TODO(), bson.M{"_id": participantID}).Decode(&user)
+			if err != nil {
+				continue
+			}
+			participants = append(participants, map[string]string{
+				"id":    participantID.Hex(),
+				"name": user.Email,
+			})
+		}
+	}
+
+	return map[string]interface{}{
+		"maximum_pickups": pickup.MaximumPickup,
+		"users":          participants,
+	}, nil
 }

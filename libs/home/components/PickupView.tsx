@@ -29,7 +29,9 @@ const PickupView = (pickup: PickupModel) => {
         Level: {pickup.pickup_level}
       </Text>
 
-      <Text style={{ ...textStyles.body }}>{pickup.message}</Text>
+      <Text style={{ ...textStyles.body }}>
+        "{pickup.message || "No message"}"
+      </Text>
 
       <View
         style={{

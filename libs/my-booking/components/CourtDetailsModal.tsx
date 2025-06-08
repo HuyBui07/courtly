@@ -102,9 +102,9 @@ export const CourtDetailsModal = () => {
         </View>
       )}
 
-      {!isPickupModalVisible && details.isJoinable && (
+      {!isPickupModalVisible && (
         <View style={{ gap: 16, flexDirection: "row", width: "100%" }}>
-          {details.isJoinable ? (
+          {details.isJoinable && !details.isPickedUp && (
             <TouchableOpacity
               onPress={() => {
                 setIsPickupModalVisible(true);
@@ -126,9 +126,7 @@ export const CourtDetailsModal = () => {
                 Pick up
               </Text>
             </TouchableOpacity>
-          ) : (
-            <View style={{ flex: 1, height: 50 }} />
-          )}
+          ) }
 
           <TouchableOpacity
             onPress={details.onCancel}
@@ -147,7 +145,7 @@ export const CourtDetailsModal = () => {
           >
             <Icon source="close" size={20} color="white" />
             <Text style={{ ...textStyles.bodyBold, color: "white" }}>
-              Cancell
+              {details.isPickedUp ? "Cancel Pickup" : "Cancel Booking"}
             </Text>
           </TouchableOpacity>
         </View>
