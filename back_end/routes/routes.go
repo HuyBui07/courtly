@@ -35,4 +35,8 @@ func AuthRoutes() {
 	http.HandleFunc("/tournament/getAll", controllers.GetAthletesByTournamentHandler)
 	http.HandleFunc("/tournament/cancel", controllers.CancelTournamentRegistrationHandler)
 
+	// feee
+	http.HandleFunc("/courtfee/get", controllers.CalculateCourtFeeHandler)
+	http.HandleFunc("/courtfee/set", controllers.UpdateCourtFeeHandler)
+
 }
