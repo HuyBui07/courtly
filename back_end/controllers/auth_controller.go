@@ -1,12 +1,11 @@
 package controllers
 
 import (
+	"back_end/models"
+	"back_end/services"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"back_end/models"
-	"back_end/services"
 )
 
 type AuthResponse struct {
@@ -133,4 +132,33 @@ func GetAllClientDataHandler(w http.ResponseWriter, r *http.Request) {
 
     w.WriteHeader(http.StatusOK)
     json.NewEncoder(w).Encode(clients)
+}
+
+func ResetPasswordHandler(w http.ResponseWriter, r *http.Request) {
+	type Request struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+
+	var req Request
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+    token := r.Header.Get("Authorization")
+	// Lấy user từ token
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	// Gọi service
+	err = services.ResetPassword(user.User_id, req.CurrentPassword, req.NewPassword)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset successful"})
 }
