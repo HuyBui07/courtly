@@ -121,6 +121,9 @@ const BookingCalendar = ({
               }}
             ></View>
             {timeBlocks.map((time, index) => {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
               if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
@@ -177,6 +180,9 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
               if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
@@ -194,7 +200,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(1, index)}
                   disabled={
                     bookedCourt1?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -205,6 +211,9 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
               if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
@@ -222,7 +231,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(2, index)}
                   disabled={
                     bookedCourt2?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -233,6 +242,9 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
               if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
@@ -250,7 +262,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(3, index)}
                   disabled={
                     bookedCourt3?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -261,6 +273,9 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}> 
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
               if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
@@ -278,7 +293,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(4, index)}
                   disabled={
                     bookedCourt4?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );

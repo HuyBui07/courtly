@@ -19,6 +19,7 @@ type CourtBooking struct {
 	State            string             `json:"state" bson:"state"`
 	CreatedAt        time.Time          `json:"created_at" bson:"created_at"`
 	AdditionalServices []AdditionalService `json:"additional_services" bson:"additional_services"`
+	AllowPickup      bool               `json:"allow_pickup" bson:"allow_pickup"`
 }
 
 type CourtBookingResponse struct {
@@ -29,6 +30,7 @@ type CourtBookingResponse struct {
 	State             string             `json:"state" bson:"state"`
 	CreatedAt         time.Time          `json:"created_at" bson:"created_at"`
 	AdditionalServices []AdditionalService `json:"additional_services" bson:"additional_services"`
+	AllowPickup      bool               `json:"allow_pickup" bson:"allow_pickup"`
 }
 
 type UserBookingInfo struct {

@@ -29,7 +29,7 @@ const PickupService = {
       if (!response.ok) {
         throw new Error("Failed to join pickup");
       }
-      return response.json();
+      return true;
     } catch (error) {
       throw new Error("Failed to join pickup");
     }

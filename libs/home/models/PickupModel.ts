@@ -6,6 +6,7 @@ interface PickupModel {
   participant_ids: string[];
   message: string;
   pickup_level: string;
+  start_time: string;
 }
 
 export default PickupModel;

@@ -5,6 +5,7 @@ import LottieView from "lottie-react-native"
 
 import { useLoadingState } from "@/libs/commons/stores/useLoadingState";
 
+
 export const LoadingCircle = () => {
   const { isLoading } = useLoadingState();
 

@@ -8,7 +8,11 @@ export type BookingOrder = {
     court_id: number;
     start_time: string;
     end_time: string;
+    allow_pickup: boolean;
   }[];
-  additional_services?: AdditionalService[];
+  additional_services: {
+    service_id: string;
+    quantity: number;
+  }[];
   total_price: number;
 };

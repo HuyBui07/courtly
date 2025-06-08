@@ -8,4 +8,5 @@ export type Booking = {
     state: string;
     created_at: string;
     additional_services?: AdditionalService[];
+    allow_pickup?: boolean;
 }

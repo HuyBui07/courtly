@@ -19,6 +19,7 @@ type BookingOrder struct {
 	StartTime        time.Time
 	EndTime          time.Time
 	AdditionalServices []models.AdditionalService
+	AllowPickup      bool
 }
 
 func CreateCourtBooking(orders []BookingOrder) error {
@@ -48,7 +49,7 @@ func CreateCourtBooking(orders []BookingOrder) error {
 
 		// Kiểm tra khoảng thời gian đã được book chưa
 		filter := bson.M{
-			"court_id": order.CourtID, // Dùng courtID dưới dạng string
+			"court_id": order.CourtID,
 			"$or": []bson.M{
 				{"start_time": bson.M{"$lt": order.EndTime}, "end_time": bson.M{"$gt": order.StartTime}},
 			},
@@ -72,6 +73,7 @@ func CreateCourtBooking(orders []BookingOrder) error {
 			CreatedAt:        time.Now(),
 			State:            "Booked",
 			AdditionalServices: order.AdditionalServices,
+			AllowPickup:      order.AllowPickup,
 		}
 
 		_, err = collection.InsertOne(context.TODO(), newBooking)

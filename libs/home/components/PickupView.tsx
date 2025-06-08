@@ -1,14 +1,14 @@
 // components
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import { textStyles, styles as GlobalStyles } from "../styles";
+import { textStyles } from "@/libs/commons/design-system/styles";
 import PickupModel from "@/libs/home/models/PickupModel";
-import { colors } from "../colors";
+import { colors } from "@/libs/commons/design-system/colors";
 import { Icon } from "react-native-paper";
 import { useGetUserInfo } from "@/libs/home/hooks/queries/useGetUserInfo";
 import { PickupDetailsModalController } from "@/libs/home/store/usePickupDetailsModalStore";
+import { memo } from "react";
 
 const PickupView = (pickup: PickupModel) => {
-  console.log(pickup);
   const { data: userInfo } = useGetUserInfo(pickup.user_id);
   return (
     <TouchableOpacity
@@ -48,7 +48,7 @@ const PickupView = (pickup: PickupModel) => {
   );
 };
 
-export default PickupView;
+export default memo(PickupView);
 
 const styles = StyleSheet.create({
   container: {

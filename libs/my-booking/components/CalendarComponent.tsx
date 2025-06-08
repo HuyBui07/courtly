@@ -2,9 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
-import Animated, {
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
@@ -14,9 +12,12 @@ import { formatDate } from "@/libs/commons/utils";
 import { InformationLine } from "./InformationLine";
 import { CourtDetailsModalController } from "@/libs/commons/stores/useCourtDetailsModalStore";
 import { useCancelBookingState } from "../hooks/mutations/useCancelBookingState";
+import { Pickup } from "../types";
+import { useCreatePickup } from "../hooks/mutations/useCreatePickup";
 
 const StateText = ({ state }: { state: string }) => {
-  const color = state === "Booked" ? colors.primary : "red";
+  const color =
+    state === "Booked" || state === "Pickup" ? colors.primary : "red";
 
   return (
     <View
@@ -40,7 +41,9 @@ const StateText = ({ state }: { state: string }) => {
       </Text>
       <MaterialCommunityIcons
         name={
-          state === "Booked" ? "check-circle-outline" : "close-circle-outline"
+          state === "Booked" || state === "Pickup"
+            ? "check-circle-outline"
+            : "close-circle-outline"
         }
         size={20}
         color={color}
@@ -60,7 +63,7 @@ const formatTime = (start: string, end: string) => {
   return `${formatTime(startDate)} - ${formatTime(endDate)}`;
 };
 
-const CalendarComponent = ({ booking }: { booking: Booking }) => {
+const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
   const { mutate: cancelBooking } = useCancelBookingState();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
@@ -74,7 +77,9 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
     const price = durationHours * 80;
 
+    console.log("booking", booking);
     CourtDetailsModalController.show({
+      court_booking_id: booking._id,
       court: booking.court_id.toString(),
       date: formattedDate,
       time: formattedTime,
@@ -82,10 +87,13 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
       price: price.toString() + ".000 VND",
       status: booking.state,
       additionalServices: booking.additional_services,
-      onCancel: !isPast ? () => {
-        cancelBooking(booking._id)
-        CourtDetailsModalController.hide()
-      } : undefined
+      isJoinable: !booking.allow_pickup,
+      onCancel: !isPast
+        ? () => {
+            cancelBooking(booking._id);
+            CourtDetailsModalController.hide();
+          }
+        : undefined,
     });
   };
 
@@ -101,7 +109,15 @@ const CalendarComponent = ({ booking }: { booking: Booking }) => {
         },
       ]}
     >
-      {!isPast && <StateText state={booking.state} />}
+      {!isPast && (
+        <StateText
+          state={
+            "pickup_id" in booking || booking?.allow_pickup
+              ? "Pickup"
+              : booking.state
+          }
+        />
+      )}
 
       <InformationLine title="Court" value={booking.court_id.toString()} />
       <InformationLine title="Date" value={formattedDate} />

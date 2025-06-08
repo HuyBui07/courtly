@@ -5,6 +5,7 @@ import (
 	"back_end/models"
 	"context"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -37,8 +38,19 @@ func CreatePickup(pickup *models.Pickup, userID string) error {
 	}
 
 	pickup.UserID = userObjID
+	pickup.StartTime = booking.StartTime // Set the start time from the booking
 
 	_, err = collection.InsertOne(context.TODO(), pickup)
+	if err != nil {
+		return err
+	}
+
+	// Update booking to allow pickup
+	_, err = bookingCollection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": bookingObjID},
+		bson.M{"$set": bson.M{"allow_pickup": true}},
+	)
 	if err != nil {
 		return err
 	}
@@ -89,6 +101,11 @@ func GetAllPickups(userID primitive.ObjectID) ([]models.Pickup, error) {
 				},
 			},
 			{
+				"participant_ids": bson.M{
+					"$ne": userID,
+				},
+			},
+			{
 				"$expr": bson.M{
 					"$ne": []interface{}{
 						bson.M{"$ifNull": []interface{}{
@@ -97,6 +114,11 @@ func GetAllPickups(userID primitive.ObjectID) ([]models.Pickup, error) {
 						}},
 						"$maximum_pickup",
 					},
+				},
+			},
+			{
+				"start_time": bson.M{
+					"$gt": time.Now(),
 				},
 			},
 		},
@@ -146,4 +168,61 @@ func HandleJoinPickup(pickupID string, userID string) error {
 	}
 
 	return nil
+}
+
+func GetUserUpcomingPickups(userID string) ([]map[string]interface{}, error) {
+	collection := config.GetCollection("Pickups")
+
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{
+		"$and": []bson.M{
+			{
+				"participant_ids": userObjID,
+			},
+			{
+				"start_time": bson.M{
+					"$gt": time.Now().UTC().Add(7 * time.Hour),
+				},
+			},
+		},
+	}
+
+	cursor, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var pickups []models.Pickup
+	if err = cursor.All(context.TODO(), &pickups); err != nil {
+		return nil, err
+	}
+
+	// Fetch court booking details for each pickup
+	bookingsCollection := config.GetCollection("CourtBookings")
+	var result []map[string]interface{}
+	for i := range pickups {
+		var booking models.CourtBooking
+		err = bookingsCollection.FindOne(context.TODO(), bson.M{"_id": pickups[i].CourtBookingID}).Decode(&booking)
+		if err != nil {
+			return nil, err
+		}
+
+		// Create combined response with booking details and pickup ID
+		bookingMap := map[string]interface{}{
+			"_id":                pickups[i].CourtBookingID.Hex(),
+			"court_id":           booking.CourtID,
+			"start_time":         booking.StartTime,
+			"end_time":           booking.EndTime,
+			"state":              booking.State,
+			"additional_services": booking.AdditionalServices,
+			"pickup_id":          pickups[i].ID.Hex(),
+		}
+		result = append(result, bookingMap)
+	}
+
+	return result, nil
 }

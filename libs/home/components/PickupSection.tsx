@@ -4,7 +4,7 @@ import { Text } from "react-native-paper";
 
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
-import PickupView from "@/libs/commons/design-system/components/PickupView";
+import PickupView from "./PickupView";
 import { useGetPickups } from "../hooks/queries/useGetPickups";
 import PickupModel from "../models/PickupModel";
 import LottieView from "lottie-react-native";
@@ -12,7 +12,6 @@ import LoadingCircleForComponents from "@/libs/commons/design-system/components/
 
 const PickupSection = () => {
   const { data: pickups, isLoading } = useGetPickups();
-  console.log(pickups);
   return (
     <>
       <View
@@ -61,7 +60,7 @@ const PickupSection = () => {
           </Text>
         </View>
       )}
-      {pickups?.length > 0 && !isLoading && (
+      {pickups?.length > 0 && (
         <ScrollView
           horizontal={true}
           showsHorizontalScrollIndicator={false}

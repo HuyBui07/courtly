@@ -11,10 +11,16 @@ import { useGetUserBookings } from "@/libs/my-booking/hooks/queries/useGetUserBo
 import { Booking } from "@/libs/my-booking/types/Booking";
 import LottieView from "lottie-react-native";
 import { BOTTOM_TAB_BAR_HEIGHT } from "@/libs/commons/design-system/constants";
+import { useGetUserUpcomingPickups } from "@/libs/my-booking/hooks/queries/useGetUserUpcomingPickups";
 
 const BookingScreen = () => {
   const [time, setTime] = useState("upcoming");
-  const { data: bookings, isLoading } = useGetUserBookings();
+  const { data: bookings, isLoading: isLoadingBookings } = useGetUserBookings();
+  const { data: upcomingPickups, isLoading: isLoadingUpcomingPickups } =
+    useGetUserUpcomingPickups();
+
+  const isLoading = isLoadingBookings || isLoadingUpcomingPickups;
+
   // Action button
   const [isABExtended, setIsABExtended] = useState(true);
   const onScroll = useCallback(({ nativeEvent }: any) => {
@@ -25,7 +31,7 @@ const BookingScreen = () => {
 
   const renderBookings = () => {
     if (time === "upcoming") {
-      return bookings?.upcoming_bookings;
+      return [...(bookings?.upcoming_bookings || []), ...(upcomingPickups || [])];
     }
     return bookings?.past_bookings;
   };

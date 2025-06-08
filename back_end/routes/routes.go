@@ -42,4 +42,5 @@ func AuthRoutes() {
 	http.HandleFunc("/pickup/getAll", controllers.GetAllPickupsHandler)
 	http.HandleFunc("/pickup/join", controllers.JoinPickupHandler)
 	http.HandleFunc("/pickup/getBookingDetails", controllers.GetPickupDetailsHandler)
+	http.HandleFunc("/pickup/getUserUpcoming", controllers.GetUserUpcomingPickupsHandler)
 }

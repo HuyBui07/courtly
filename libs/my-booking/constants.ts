@@ -14,6 +14,7 @@ export const timeBlocks = [
   "18:00",
   "19:00",
   "20:00",
+  "21:00",
 ];
 
 export const GET_USER_BOOKINGS_URL = `${API_BASE_URL}/getUserBookings`;
@@ -21,3 +22,5 @@ export const GET_ALL_BOOKED_COURT_ON_SPECIFIC_DATE_URL = `${API_BASE_URL}/getAll
 export const BOOK_COURT_URL = `${API_BASE_URL}/bookCourt`;
 export const CANCEL_BOOKING_URL = `${API_BASE_URL}/cancelBookCourt`;
 export const PAYMENT_SUCCESS_URL = `${API_BASE_URL}/success`;
+export const GET_USER_UPCOMING_PICKUPS_URL = `${API_BASE_URL}/pickup/getUserUpcoming`;
+export const CREATE_PICKUP_URL = `${API_BASE_URL}/pickup/create`;

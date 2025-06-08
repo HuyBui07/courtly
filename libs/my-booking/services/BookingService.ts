@@ -4,10 +4,14 @@ import {
   BOOK_COURT_URL,
   CANCEL_BOOKING_URL,
   PAYMENT_SUCCESS_URL,
+  GET_USER_UPCOMING_PICKUPS_URL,
+  CREATE_PICKUP_URL,
 } from "../constants";
 
 import { TokenManager } from "@/libs/store/persistStore";
 import { BookingOrder } from "../types/BookingOrder";
+import { Pickup } from "../types";
+import { PickupMetadataPayload } from "../types/PickupMetadataPayload";
 
 export const BookingService = {
   getUserBookings: async () => {
@@ -106,6 +110,41 @@ export const BookingService = {
           },
         }
       );
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+  getUserUpcomingPickups: async () => {
+    try {
+      const response = await fetch(GET_USER_UPCOMING_PICKUPS_URL, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+      });
+      if (!response.ok) {
+        const errorText = (await response.text()).trim();
+        throw new Error(errorText);
+      }
+      return response.json();
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+  createPickup: async (payload: PickupMetadataPayload) => {
+    try {
+      const response = await fetch(CREATE_PICKUP_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const errorText = (await response.text()).trim();
+        throw new Error(errorText);
+      }
+      return response.text();
     } catch (error: any) {
       throw new Error(error.message);
     }

@@ -23,6 +23,7 @@ type BookingRequest struct {
 		CourtID   int32  `json:"court_id"`
 		StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
 		EndTime   string `json:"end_time"`
+		AllowPickup bool `json:"allow_pickup"`
 	} `json:"courts"`
 	AdditionalServices []models.AdditionalService `json:"additional_services,omitempty"`
 }
@@ -83,6 +84,7 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 			UserID:     user.ID.Hex(),
 			StartTime:  startTime,
 			EndTime:    endTime,
+			AllowPickup: court.AllowPickup,
 		}
 
 		// Attach additional services to the order with earliest start time
