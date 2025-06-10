@@ -69,7 +69,10 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
   const { data: pickupParticipatedState } = useGetPickupParticipatedState(
     booking._id
   );
-  const isPast = new Date(booking.end_time) < new Date();
+  
+  const isPast =
+    new Date(booking.end_time) <
+    new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
 
   // if the pickup_id is in the booking, then the component is picked up and this user is not the host
   const isThisComponentPickedUp = "pickup_id" in booking;
@@ -116,22 +119,20 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
     >
       {!isPast && (
         <StateText
-          state={
-            (() => {
-              if (booking.state === "Cancelled") {
-                return "Cancelled";
-              }
-              if (isThisComponentPickedUp) {
-                return "You've picked up";
-              } else if (booking?.allow_pickup) {
-                return `Picking up ${pickupParticipatedState?.users?.length || 0} / ${
-                  pickupParticipatedState?.maximum_pickups 
-                }`;
-              } else {
-                return booking.state;
-              }
-            })()
-          }
+          state={(() => {
+            if (booking.state === "Cancelled") {
+              return "Cancelled";
+            }
+            if (isThisComponentPickedUp) {
+              return "You've picked up";
+            } else if (booking?.allow_pickup) {
+              return `Picking up ${
+                pickupParticipatedState?.users?.length || 0
+              } / ${pickupParticipatedState?.maximum_pickups}`;
+            } else {
+              return booking.state;
+            }
+          })()}
         />
       )}
 

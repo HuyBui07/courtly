@@ -1,159 +1,104 @@
-import * as React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
-import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { Avatar, Icon, Text, useTheme } from "react-native-paper";
+import { router } from "expo-router";
 import { queryClient } from "@/libs/commons/utils";
+import { TokenManager } from "@/libs/store/persistStore";
+import { useNotifications } from "@/libs/store/useNotifications";
+
+const profileOptions = [
+  { icon: "account", label: "Account" },
+  { icon: "calendar-check", label: "Your Booking" },
+  { icon: "cash-refund", label: "Refunds" },
+  { icon: "heart-outline", label: "Favourite Venues" },
+  { icon: "headset", label: "Support" },
+  { icon: "lock", label: "Privacy Policy" },
+  { icon: "shield-check", label: "Terms of use" },
+];
 
 const ProfileScreen = () => {
-  const router = useRouter();
+  const theme = useTheme();
+
+  const handleLogout = async () => {
+    queryClient.clear();
+    await TokenManager.clear();
+    await TokenManager.clearFCMToken();
+    (useNotifications as any).getState().clearNotifications();
+    router.dismissTo("/(auth)");  
+  };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Image
-          source={{ uri: "https://randomuser.me/api/portraits/men/75.jpg" }}
-          style={styles.avatar}
+        <Avatar.Image
+          source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
+          size={60}
         />
-        <View>
-          <Text style={styles.name}>Surendhar</Text>
-          <Text style={styles.email}>Surendharpv01@gmail.com</Text>
+        <View style={{ marginLeft: 12 }}>
+          <Text variant="titleMedium" style={styles.nameText}>
+            Surendhar
+          </Text>
+          <Text variant="bodySmall" style={styles.emailText}>
+            surendharpv01@gmail.com
+          </Text>
         </View>
       </View>
 
-      {/* Menu List */}
-      <View style={styles.menuContainer}>
-        <MenuItem icon="person" label="Account" />
-        <MenuItem icon="calendar" label="Your Booking" />
-        <MenuItem
-          icon="money-bill-wave"
-          label="Refunds"
-          iconType="FontAwesome5"
-        />
-        <MenuItem icon="bookmark" label="Favourite Venues" />
-        <MenuItem
-          icon="support-agent"
-          label="Support"
-          iconType="MaterialIcons"
-        />
-        <MenuItem icon="lock" label="Privacy Policy" />
-        <MenuItem icon="shield-checkmark" label="Terms of use" />
-        <MenuItem
-          icon="log-out"
-          label="Logout"
-          color="red"
-          onClick={() => {
-            queryClient.clear();
-            router.dismissTo("/(auth)");
-          }}
-        />
+      {/* Options */}
+      <View style={styles.optionList}>
+        {profileOptions.map((item, index) => (
+          <TouchableOpacity key={index} style={styles.optionItem}>
+            <Icon source={item.icon} size={24} color={theme.colors.primary} />
+            <Text style={styles.optionText}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Logout */}
+        <TouchableOpacity
+          style={[styles.optionItem, { marginTop: 12 }]}
+          onPress={handleLogout}
+        >
+          <Icon source="logout" size={24} color="red" />
+          <Text style={[styles.optionText, { color: "red" }]}>Logout</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Bottom Navigation
-      <View style={styles.bottomNav}>
-        <NavItem icon="home" label="Home" />
-        <NavItem icon="football" label="Turf" />
-        <NavItem icon="clipboard" label="Booking" />
-        <NavItem icon="heart" label="Favorites" />
-        <NavItem icon="person" label="Profile" active />
-      </View> */}
-    </View>
+    </ScrollView>
   );
 };
 
-// Component hiển thị từng mục menu
-const MenuItem = ({
-  icon,
-  label,
-  color = "green",
-  iconType = "Ionicons",
-  onClick,
-}) => {
-  const IconComponent =
-    iconType === "FontAwesome5"
-      ? FontAwesome5
-      : iconType === "MaterialIcons"
-      ? MaterialIcons
-      : Ionicons;
+export default ProfileScreen;
 
-  return (
-    <TouchableOpacity style={styles.menuItem} onPress={onClick}>
-      <IconComponent name={icon} size={22} color={color} />
-      <Text style={[styles.menuText, { color }]}>{label}</Text>
-    </TouchableOpacity>
-  );
-};
-
-// Component Navigation dưới cùng
-const NavItem = ({ icon, label, active = false }) => {
-  return (
-    <TouchableOpacity style={styles.navItem}>
-      <Ionicons name={icon} size={24} color={active ? "green" : "black"} />
-      <Text style={[styles.navText, active && { color: "green" }]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingTop: 30,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#D0F5D6",
+    marginBottom: 24,
   },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
-  },
-  name: {
-    fontSize: 18,
+  nameText: {
     fontWeight: "bold",
   },
-  email: {
-    fontSize: 14,
-    color: "gray",
+  emailText: {
+    color: "#888",
   },
-  menuContainer: {
-    marginTop: 10,
-    paddingHorizontal: 20,
+  optionList: {
+    marginTop: 8,
   },
-  menuItem: {
+  optionItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#ccc",
   },
-  menuText: {
+  optionText: {
+    marginLeft: 16,
     fontSize: 16,
-    marginLeft: 15,
-  },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-  },
-  navItem: {
-    alignItems: "center",
-  },
-  navText: {
-    fontSize: 12,
-    marginTop: 2,
-    color: "black",
   },
 });
-
-export default ProfileScreen;

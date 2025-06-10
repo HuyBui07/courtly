@@ -1,16 +1,18 @@
-import { View, Text } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { WebView } from "react-native-webview";
 import LottieView from "lottie-react-native";
 import { API_BASE_URL } from "@/libs/commons/constants";
 import { useTournamentPaymentSuccess } from "@/libs/my-booking/hooks/mutations/useTournamentPaymentSuccess";
+import { textStyles } from "@/libs/commons/design-system/styles";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "@/libs/commons/design-system/colors";
 
 const CheckOut = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
-  const [isPopper, setIsPopper] = useState(false);
 
   // Call the hook at the top level
   const { mutate: handlePaymentSuccess } = useTournamentPaymentSuccess();
@@ -32,7 +34,6 @@ const CheckOut = () => {
 
     if (url.includes("/tournament-success?code=00")) {
       setVisible(true);
-      setIsPopper(true);
       // Handle successful payment
 
       if (newOrderCode && newPaymentStatus) {
@@ -60,22 +61,18 @@ const CheckOut = () => {
           startInLoadingState={true}
         />
       )}
-      {isPopper && (
+
+      {visible && (
         <View
           style={{
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "rgba(0, 0, 0, 0)",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            gap: 16,
           }}
         >
           <LottieView
-            source={require("../../../../assets/images/party_popper.json")}
+            source={require("../../../../assets/gifs/success_pay.json")}
             autoPlay
             loop={false}
             style={{
@@ -83,7 +80,21 @@ const CheckOut = () => {
               height: 200,
             }}
           />
-          <Text>Thanh toán thành công!</Text>
+          <Text style={textStyles.title}>Successfully paid!</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.replace("/(protected)/booking")}
+          >
+            <Ionicons name="home" size={24} color="white" />
+            <Text
+              style={[
+                textStyles.body,
+                { color: "white", includeFontPadding: false },
+              ]}
+            >
+              Back to booking
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </>
@@ -91,3 +102,11 @@ const CheckOut = () => {
 };
 
 export default CheckOut;
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 10,
+  },
+});

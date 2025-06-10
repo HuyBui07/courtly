@@ -34,11 +34,11 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	bookingOrder := r.URL.Query().Get("bookingOrder")
 	fmt.Println(bookingOrder)
-	
+
 	type BookingOrder struct {
 		Courts []struct {
 			CourtID   int    `json:"court_id"`
-			StartTime string `json:"start_time"` 
+			StartTime string `json:"start_time"`
 			EndTime   string `json:"end_time"`
 		} `json:"courts"`
 		AdditionalServices []struct {
@@ -63,9 +63,9 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 	for _, court := range order.Courts {
 		startTime, _ := time.Parse(time.RFC3339, court.StartTime)
 		endTime, _ := time.Parse(time.RFC3339, court.EndTime)
-		
+
 		items = append(items, payos.Item{
-			Name:     fmt.Sprintf("Court %d (%s - %s)", 
+			Name: fmt.Sprintf("Court %d (%s - %s)",
 				court.CourtID,
 				startTime.Format("15:04"),
 				endTime.Format("15:04")),
@@ -76,16 +76,16 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Add additional services to items
 	servicesPrices := map[string]int{
-		"water":      10000,
-		"soda":       15000,
+		"water":       10000,
+		"soda":        15000,
 		"shuttlecock": 50000,
-		"towel":      20000,
+		"towel":       20000,
 	}
 	servicesNames := map[string]string{
-		"water":      "Water Bottle",
-		"soda":       "Soda",
+		"water":       "Water Bottle",
+		"soda":        "Soda",
 		"shuttlecock": "Shuttlecock",
-		"towel":      "Towel",
+		"towel":       "Towel",
 	}
 
 	for _, service := range order.AdditionalServices {
@@ -101,15 +101,15 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 		OrderCode:   time.Now().UnixNano() / int64(time.Millisecond),
 		Amount:      order.TotalPrice,
 		Description: "Thanh toan don hang",
-		Items: items,
-		CancelUrl: domain + "cancel",
-		ReturnUrl: domain + "success",
+		Items:       items,
+		CancelUrl:   domain + "cancel",
+		ReturnUrl:   domain + "success",
 	}
 
 	paymentLinkResponse, err := payos.CreatePaymentLink(paymentLinkRequest)
 
 	unpaidBooking := models.UnpaidBooking{
-		OrderCode:   paymentLinkResponse.OrderCode,
+		OrderCode: paymentLinkResponse.OrderCode,
 		BookingOrder: models.BookingOrderDetail{
 			Courts: func() []models.CourtBookingDetail {
 				var courts []models.CourtBookingDetail
@@ -127,7 +127,7 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 				for _, service := range order.AdditionalServices {
 					additionalServices = append(additionalServices, models.AdditionalService{
 						ServiceID: service.ServiceID,
-						Quantity: service.Quantity,
+						Quantity:  service.Quantity,
 					})
 				}
 				return additionalServices
@@ -185,15 +185,16 @@ func SuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		startTime, _ := time.Parse(time.RFC3339, court.StartTime)
 		endTime, _ := time.Parse(time.RFC3339, court.EndTime)
 		orders = append(orders, services.BookingOrder{
-			CourtID:   int32(court.CourtID),
-			UserID:    user.ID.Hex(),
-			StartTime: startTime,
-			EndTime:   endTime,
+			CourtID:     int32(court.CourtID),
+			UserID:      user.ID.Hex(),
+			StartTime:   startTime,
+			EndTime:     endTime,
+			AllowPickup: false,
 		})
 
 		orders[0].AdditionalServices = unpaidBooking.BookingOrder.AdditionalServices
 	}
-	
+
 	if paymentStatus == "PAID" {
 		services.CreateCourtBooking(orders)
 		w.WriteHeader(http.StatusOK)
@@ -263,7 +264,7 @@ func TournamentSuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	if paymentStatus == "PAID" {
 		services.RegisterToTournament(tournamentID, user.User_id, *user.Email)
 		w.WriteHeader(http.StatusOK)
@@ -275,4 +276,3 @@ func TournamentSuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
 func CancelPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Cancel payment")
 }
-

@@ -1,15 +1,19 @@
-import { View } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { WebView } from "react-native-webview";
 import LottieView from "lottie-react-native";
 import { API_BASE_URL } from "@/libs/commons/constants";
 import { usePaymentSuccess } from "@/libs/my-booking/hooks/mutations/usePaymentSuccess";
+import { textStyles } from "@/libs/commons/design-system/styles";
+import { colors } from "@/libs/commons/design-system/colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const CheckOut = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
+  const { mutate: handlePaymentSuccess } = usePaymentSuccess();
   // Parse the booking order from the URL params
   const bookingOrder = params.bookingOrder
     ? JSON.parse(params.bookingOrder as string)
@@ -29,11 +33,13 @@ const CheckOut = () => {
 
     if (url.includes("/success?code=00")) {
       // Handle successful payment
-      if (!visible) {
-        // Only run once by checking visible state
-        setVisible(true); // Set visible to prevent running again
-        usePaymentSuccess(orderCode!, paymentStatus!);
-      }
+
+      // Only run once by checking visible state
+      setVisible(true); // Set visible to prevent running again
+      handlePaymentSuccess({
+        orderCode: orderCode!,
+        paymentStatus: paymentStatus!,
+      });
     }
 
     if (url.includes("/cancel")) {
@@ -47,12 +53,14 @@ const CheckOut = () => {
 
   return (
     <>
-      {/* <WebView
-        webviewDebuggingEnabled
-        source={{ uri: paymentUrl }}
-        onNavigationStateChange={handleNavigationStateChange}
-        startInLoadingState={true}
-      /> */}
+      {!visible && (
+        <WebView
+          webviewDebuggingEnabled
+          source={{ uri: paymentUrl }}
+          onNavigationStateChange={handleNavigationStateChange}
+          startInLoadingState={true}
+        />
+      )}
 
       {visible && (
         <View
@@ -60,16 +68,11 @@ const CheckOut = () => {
             flex: 1,
             justifyContent: "center",
             alignItems: "center",
-            backgroundColor: "rgba(0, 0, 0, 0)",
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            gap: 16,
           }}
         >
           <LottieView
-            source={require("../../../assets/images/party_popper.json")}
+            source={require("../../../assets/gifs/success_pay.json")}
             autoPlay
             loop={false}
             style={{
@@ -77,6 +80,21 @@ const CheckOut = () => {
               height: 200,
             }}
           />
+          <Text style={textStyles.title}>Successfully paid!</Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.replace("/(protected)/booking")}
+          >
+            <Ionicons name="home" size={24} color="white" />
+            <Text
+              style={[
+                textStyles.body,
+                { color: "white", includeFontPadding: false },
+              ]}
+            >
+              Back to booking
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </>
@@ -84,3 +102,11 @@ const CheckOut = () => {
 };
 
 export default CheckOut;
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: colors.primary,
+    padding: 10,
+    borderRadius: 10,
+  },
+});

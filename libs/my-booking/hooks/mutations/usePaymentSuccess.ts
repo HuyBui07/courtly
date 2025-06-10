@@ -3,14 +3,20 @@ import { BookingService } from "../../services/BookingService";
 import { queryClient } from "@/libs/commons/utils";
 import { router } from "expo-router";
 
-export const usePaymentSuccess = (orderCode: string, paymentStatus: string) => {
+type PaymentSuccessProps = {
+  orderCode: string;
+  paymentStatus: string;
+};
+
+export const usePaymentSuccess = () => {
   return useMutation({
-    mutationFn: () => BookingService.paymentSuccess(orderCode, paymentStatus),
+    mutationFn: (props: PaymentSuccessProps) =>
+      BookingService.paymentSuccess(props.orderCode, props.paymentStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
       setTimeout(() => {
         router.replace("/(protected)/booking");
-      }, 3000);
+      }, 4000);
     },
     onError: (error) => {
       console.error("Payment failed:", error);

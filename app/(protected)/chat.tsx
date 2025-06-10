@@ -2,18 +2,24 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Keyboard, FlatList } from "react-native";
 import { TextInput } from "react-native-paper";
 import ChatBubble from "@/libs/chat/components/ChatBubble";
-import DateBreakline from "@/libs/chat/components/DateBreakline";
-import { useChat } from "././../../libs/chat/hooks/useChatMessages";
-import { User } from "@/libs/auth/types";
-
-const conversationId = "test-chat-01"; // Bạn có thể truyền vào prop nếu cần động
+import { IMessage } from "@/libs/chat/types";
+import { firebase } from "@react-native-firebase/database";
+import { useGetPersonalData } from "@/libs/commons/hooks/useGetPersonalData";
 
 const Chat = () => {
   const [keyboardOffset, setKeyboardOffset] = useState(80);
   const [text, setText] = useState("");
-  const { messages, sendMessage } = useChat(conversationId);
+  const [messages, setMessages] = useState<IMessage[]>([]);
+  const { data: personalData } = useGetPersonalData();
+  const messagesRef = firebase
+    .app()
+    .database(
+      "https://courtly-5e320-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    )
+    .ref();
 
   useEffect(() => {
+    // Keyboard listeners
     const showListener = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardOffset(10);
     });
@@ -21,43 +27,60 @@ const Chat = () => {
       setKeyboardOffset(80);
     });
 
+    // Set up realtime listener
+    const unsubscribe = messagesRef.on("value", (snapshot) => {
+      const messagesData = snapshot.val();
+      console.log(messagesData);
+      if (messagesData) {
+        // Convert object to array
+        const messagesArray = Object.entries(messagesData).map(
+          ([key, value]: [string, any]) => {
+            return {
+              _id: key,
+              ...value,
+            };
+          }
+        ).reverse();
+        setMessages(messagesArray);
+      }
+    });
+
     return () => {
       showListener.remove();
       hideListener.remove();
+      messagesRef.off("value", unsubscribe);
     };
   }, []);
 
   const handleSend = async () => {
     if (!text.trim()) return;
 
-    await sendMessage({
-       text: text.trim(),
-      
-      createdAt: Date.now(),
-      user: {
-        _id: "user-123", // Chắc chắn có trường _id
-        name: "Gia Huy",
-        email: "giahuy@123"
-      },
-      _id: ""
-    });
-    
-    
-    
-    setText("");
+    try {
+      messagesRef.push({
+        text: text,
+        email: personalData?.email,
+        timestamp: Date.now(),
+      });
+
+      setText("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   return (
     <View style={styles.container}>
       <FlatList
         data={messages}
-        keyExtractor={(item) => item._id.toString()}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <>
-            {/* Nếu muốn có DateBreakline thì xử lý thêm theo ngày ở đây */}
-            <ChatBubble message={item.text} avatarUrl={item.user.avatar} />
-          </>
+          <ChatBubble
+            email={item.email}
+            message={item.text}
+            isOwnMessage={item.email === personalData?.email}
+          />
         )}
+        inverted={false}
       />
 
       <TextInput

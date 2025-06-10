@@ -14,6 +14,8 @@ func AuthRoutes() {
 	http.HandleFunc("/getAllAdmins", controllers.GetAllAdminDataHandler)
 	http.HandleFunc("/getAllClients", controllers.GetAllClientDataHandler)
 	http.HandleFunc("/getUserInfoByID", controllers.GetUserInfoByIDHandler)
+	http.HandleFunc("/resetPass", controllers.ResetPasswordHandler)
+
 	//
 	http.HandleFunc("/createCourt", controllers.CreateCourtHandler)
 
@@ -45,4 +47,12 @@ func AuthRoutes() {
 	http.HandleFunc("/pickup/getUserUpcoming", controllers.GetUserUpcomingPickupsHandler)
 	http.HandleFunc("/pickup/getParticipatedState", controllers.GetPickupParticipatedStateHandler)
 	http.HandleFunc("/pickup/cancel", controllers.CancelPickupHandler)
+	// statistic
+	http.HandleFunc("/statistics/usage", controllers.GetCourtUsageStatisticHandler)
+	http.HandleFunc("/statistics/revenue", controllers.GetCourtRevenueStatisticHandler)
+
+	// feee
+	http.HandleFunc("/courtfee/get", controllers.CalculateCourtFeeHandler)
+	http.HandleFunc("/courtfee/set", controllers.UpdateCourtFeeHandler)
+
 }

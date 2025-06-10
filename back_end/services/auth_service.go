@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"back_end/config"
@@ -15,198 +16,207 @@ import (
 )
 
 var Token string
+
 func RegisterUser(user *models.User) (string, error) {
-    collection := config.GetCollection("Users")
-    var existingUser models.User
-    err := collection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&existingUser)
+	collection := config.GetCollection("Users")
+	var existingUser models.User
+	err := collection.FindOne(context.Background(), bson.M{"email": user.Email}).Decode(&existingUser)
 
-    if err == nil {
-        return "", errors.New("email already exists")
-    }
+	if err == nil {
+		return "", errors.New("email already exists")
+	}
 
-    // Hash password
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
-    if err != nil {
-        return "", err
-    }
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
 
-    hashedPasswordStr := string(hashedPassword)
-    user.Password = &hashedPasswordStr
+	hashedPasswordStr := string(hashedPassword)
+	user.Password = &hashedPasswordStr
 	user.Type = "Client"
-    user.Create_at = time.Now()
-    user.Update_at = time.Now()
+	user.Create_at = time.Now()
+	user.Update_at = time.Now()
+	user.FCMToken = user.FCMToken
 
-    // Insert user vào database
-    result, err := collection.InsertOne(context.Background(), user)
-    if err != nil {
-        return "", err
-    }
+	// Insert user vào database
+	result, err := collection.InsertOne(context.Background(), user)
+	if err != nil {
+		return "", err
+	}
 
-    // objectId = user_id
-    user.User_id = result.InsertedID.(primitive.ObjectID).Hex()
+	// objectId = user_id
+	user.User_id = result.InsertedID.(primitive.ObjectID).Hex()
 
-    filter := bson.M{"_id": result.InsertedID}
-    update := bson.M{"$set": bson.M{"user_id": user.User_id}}
+	filter := bson.M{"_id": result.InsertedID}
+	update := bson.M{"$set": bson.M{"user_id": user.User_id}}
 
-    _, err = collection.UpdateOne(context.Background(), filter, update)
-    if err != nil {
-        return "", err
-    }
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return "", err
+	}
 
-    // Tạo token
-    token, err := utils.GenerateJWT(user.User_id)
-    if err != nil {
-        return "", err
-    }
-    Token = token
-    // Cập nhật token vào MongoDB
-    updateToken := bson.M{"$set": bson.M{"token": token, "update_at": time.Now()}}
-    _, err = collection.UpdateOne(context.TODO(), bson.M{"_id": result.InsertedID}, updateToken)
+	// Tạo token
+	token, err := utils.GenerateJWT(user.User_id)
+	if err != nil {
+		return "", err
+	}
+	Token = token
+	// Cập nhật token vào MongoDB
+	updateToken := bson.M{"$set": bson.M{"token": token, "update_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"_id": result.InsertedID}, updateToken)
 
-    return token, err
+	return token, err
 }
 
-func LoginUser(email, password string) (string, error) {
-    collection := config.GetCollection("Users")
+func LoginUser(email, password, fcmToken string) (string, error) {
+	collection := config.GetCollection("Users")
 
-    var user models.User
-    err := collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
-    if err != nil {
-        return "", errors.New("user not found")
-    }
+	var user models.User
+	err := collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		return "", errors.New("user not found")
+	}
 
-    if err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password)); err != nil {
-        return "", errors.New("invalid password")
-    }
+	if err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password)); err != nil {
+		return "", errors.New("invalid password")
+	}
 
-    token, err := utils.GenerateJWT(user.User_id) // Sử dụng user_id để tạo token
-    if err != nil {
-        return "", err
-    }
-    Token = token
-    // Cập nhật token vào MongoDB
-    update := bson.M{"$set": bson.M{"token": token, "update_at": time.Now()}}
-    _, err = collection.UpdateOne(context.TODO(), bson.M{"email": email}, update)
+	token, err := utils.GenerateJWT(user.User_id) // Sử dụng user_id để tạo token
+	if err != nil {
+		return "", err
+	}
+	Token = token
 
-    return token, err
+	// Cập nhật fcm token vào MongoDB
+	updateFCMToken := bson.M{"$set": bson.M{"fcmToken": fcmToken, "update_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"email": email}, updateFCMToken)
+	if err != nil {
+		return "", err
+	}
+	// Cập nhật token vào MongoDB
+	update := bson.M{"$set": bson.M{"token": token, "update_at": time.Now()}}
+	_, err = collection.UpdateOne(context.TODO(), bson.M{"email": email}, update)
+
+	return token, err
 }
 
 func GetUserDataByToken(token string) (models.User, error) {
-    // Xác thực token và lấy user_id
-    userID, err := utils.ValidateJWT(token)
-    if err != nil {
-        return models.User{}, errors.New("invalid token")
-    }
+	// Xác thực token và lấy user_id
+	userID, err := utils.ValidateJWT(token)
+	if err != nil {
+		return models.User{}, errors.New("invalid token")
+	}
 
-    // Lấy user theo user_id từ database
-    collection := config.GetCollection("Users")
-    var user models.User
-    err = collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&user)
-    if err != nil {
-        return models.User{}, errors.New("user not found")
-    }
+	// Lấy user theo user_id từ database
+	collection := config.GetCollection("Users")
+	var user models.User
+	err = collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&user)
+	if err != nil {
+		return models.User{}, errors.New("user not found")
+	}
 
-    return user, nil
+	return user, nil
 }
 
 func isAdmin(userID string) bool {
-    collection := config.GetCollection("Users")
-    var user models.User
-    err := collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&user)
-    if err != nil || user.Type != "Admin" {
-        return false
-    }
-    return true
+	collection := config.GetCollection("Users")
+	var user models.User
+	err := collection.FindOne(context.TODO(), bson.M{"user_id": userID}).Decode(&user)
+	if err != nil || user.Type != "Admin" {
+		return false
+	}
+	return true
 }
 
 func GetAllUserDataByToken(token string) ([]models.User, error) {
-    // Xác thực token và kiểm tra quyền Admin
-    userID, err := utils.ValidateJWT(token)
-    if err != nil {
-        return nil, errors.New("invalid token")
-    }
-    
-    if !isAdmin(userID) {
-        return nil, errors.New("you don't have permission")
-    }
+	// Xác thực token và kiểm tra quyền Admin
+	userID, err := utils.ValidateJWT(token)
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
 
-    collection := config.GetCollection("Users")
-    var users []models.User
+	if !isAdmin(userID) {
+		return nil, errors.New("you don't have permission")
+	}
 
-    cursor, err := collection.Find(context.Background(), bson.M{})
-    if err != nil {
-        return nil, errors.New("failed to fetch users")
-    }
-    defer cursor.Close(context.Background())
+	collection := config.GetCollection("Users")
+	var users []models.User
 
-    if err = cursor.All(context.Background(), &users); err != nil {
-        return nil, errors.New("error decoding users")
-    }
+	cursor, err := collection.Find(context.Background(), bson.M{})
+	if err != nil {
+		return nil, errors.New("failed to fetch users")
+	}
+	defer cursor.Close(context.Background())
 
-    return users, nil
+	if err = cursor.All(context.Background(), &users); err != nil {
+		return nil, errors.New("error decoding users")
+	}
+
+	return users, nil
 }
 
 func GetAllAdmins(token string) ([]models.User, error) {
-    // Xác thực token và kiểm tra quyền Admin
-    userID, err := utils.ValidateJWT(token)
-    if err != nil {
-        return nil, errors.New("invalid token")
-    }
-    
-    if !isAdmin(userID) {
-        return nil, errors.New("you don't have permission")
-    }
+	// Xác thực token và kiểm tra quyền Admin
+	userID, err := utils.ValidateJWT(token)
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
 
-    // Kết nối đến collection Users
-    collection := config.GetCollection("Users")
-    var admins []models.User
+	if !isAdmin(userID) {
+		return nil, errors.New("you don't have permission")
+	}
+
+	// Kết nối đến collection Users
+	collection := config.GetCollection("Users")
+	var admins []models.User
 	filter := bson.M{
 		"user_type": "Admin",
 	}
-    // Truy vấn tất cả Admins
-    cursor, err := collection.Find(context.Background(), filter)
-    if err != nil {
-        return nil, errors.New("failed to fetch admins")
-    }
-    defer cursor.Close(context.Background())
+	// Truy vấn tất cả Admins
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, errors.New("failed to fetch admins")
+	}
+	defer cursor.Close(context.Background())
 
-    if err = cursor.All(context.Background(), &admins); err != nil {
-        return nil, errors.New("error decoding admins")
-    }
+	if err = cursor.All(context.Background(), &admins); err != nil {
+		return nil, errors.New("error decoding admins")
+	}
 
-    return admins, nil
+	return admins, nil
 }
 
 func GetAllClients(token string) ([]models.User, error) {
-    // Xác thực token và kiểm tra quyền Admin
-    userID, err := utils.ValidateJWT(token)
-    if err != nil {
-        return nil, errors.New("invalid token")
-    }
-    
-    if !isAdmin(userID) {
-        return nil, errors.New("you don't have permission")
-    }
+	// Xác thực token và kiểm tra quyền Admin
+	userID, err := utils.ValidateJWT(token)
+	if err != nil {
+		return nil, errors.New("invalid token")
+	}
 
-    // Kết nối đến collection Users
-    collection := config.GetCollection("Users")
-    var clients []models.User
+	if !isAdmin(userID) {
+		return nil, errors.New("you don't have permission")
+	}
+
+	// Kết nối đến collection Users
+	collection := config.GetCollection("Users")
+	var clients []models.User
 	filter := bson.M{
 		"user_type": "Client",
 	}
-    // Truy vấn tất cả Clients
-    cursor, err := collection.Find(context.Background(), filter)
-    if err != nil {
-        return nil, errors.New("failed to fetch clients")
-    }
-    defer cursor.Close(context.Background())
+	// Truy vấn tất cả Clients
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return nil, errors.New("failed to fetch clients")
+	}
+	defer cursor.Close(context.Background())
 
-    // Decode kết quả vào slice clients
-    if err = cursor.All(context.Background(), &clients); err != nil {
-        return nil, errors.New("error decoding clients")
-    }
+	// Decode kết quả vào slice clients
+	if err = cursor.All(context.Background(), &clients); err != nil {
+		return nil, errors.New("error decoding clients")
+	}
 
-    return clients, nil
+	return clients, nil
 }
 
 func GetUserInfoByID(userID string) (string, error) {
@@ -219,3 +229,44 @@ func GetUserInfoByID(userID string) (string, error) {
 	return *user.Email, nil
 }
 
+func ResetPassword(userID string, currentPassword, newPassword string) error {
+	// Tìm user theo ID
+	userCollection := config.GetCollection("Users")
+	objID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID")
+	}
+
+	var user models.User
+	err = userCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&user)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	// So sánh mật khẩu hiện tại
+	err = bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(currentPassword))
+	if err != nil {
+		return fmt.Errorf("current password is incorrect")
+	}
+
+	// Hash mật khẩu mới
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("could not hash new password: %v", err)
+	}
+
+	// Cập nhật mật khẩu
+	update := bson.M{
+		"$set": bson.M{
+			"password":  string(hashedPassword),
+			"update_at": time.Now(),
+		},
+	}
+
+	_, err = userCollection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+	if err != nil {
+		return fmt.Errorf("failed to update password: %v", err)
+	}
+
+	return nil
+}

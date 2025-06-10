@@ -24,9 +24,12 @@ const BookingScreen = () => {
     useGetUserUpcomingPickups();
   const { data: tournaments, isLoading: isLoadingTournaments } =
     useGetTournaments();
-  const registeredTournaments = tournaments?.filter((tournament: Tournament) => tournament.is_register);
+  const registeredTournaments = tournaments?.filter(
+    (tournament: Tournament) => tournament.is_register
+  );
 
-  const isLoading = isLoadingBookings || isLoadingUpcomingPickups || isLoadingTournaments;
+  const isLoading =
+    isLoadingBookings || isLoadingUpcomingPickups || isLoadingTournaments;
 
   // Action button
   const [isABExtended, setIsABExtended] = useState(true);
@@ -38,9 +41,13 @@ const BookingScreen = () => {
 
   const renderBookings = () => {
     if (time === "upcoming") {
-      return [...(bookings?.upcoming_bookings || []), ...(upcomingPickups || []), ...(registeredTournaments || [])];
+      return [
+        ...(bookings?.upcoming_bookings || []),
+        ...(upcomingPickups || []),
+        ...(registeredTournaments || []),
+      ];
     }
-    return bookings?.past_bookings;
+    return [...(bookings?.past_bookings || [])].reverse();
   };
 
   const renderItem = ({ item }: { item: Booking | Pickup | Tournament }) => {

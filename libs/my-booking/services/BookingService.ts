@@ -98,6 +98,7 @@ export const BookingService = {
     }
   },
   paymentSuccess: async (orderCode: string, paymentStatus: string) => {
+    console.log("orderCode", orderCode);
     try {
       const response = await fetch(
         PAYMENT_SUCCESS_URL +

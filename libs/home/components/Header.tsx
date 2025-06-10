@@ -11,6 +11,8 @@ import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
 import { AnimatedIconButton } from "@/libs/commons/design-system/components/AnimatedComponents";
 import { useEffect } from "react";
+import { router } from "expo-router";
+import { useNotifications } from "@/libs/store/useNotifications";
 
 const Header = ({
   headTitle,
@@ -20,7 +22,7 @@ const Header = ({
   description?: string;
 }) => {
   const animatedValue = useSharedValue(5);
-
+  const { notifications } = useNotifications() as any;
   useEffect(() => {
     animatedValue.value = withRepeat(
       withSpring(-animatedValue.value),
@@ -63,9 +65,9 @@ const Header = ({
           icon="bell"
           iconColor="white"
           size={24}
-          onPress={() => console.log("Pressed")}
+          onPress={() => router.push("/notifications")}
           style={[
-            animatedStyle,
+            notifications.length > 0 ? animatedStyle : {},
             {
               borderWidth: 1,
               borderColor: "white",
@@ -73,18 +75,20 @@ const Header = ({
             },
           ]}
         />
-        <Badge
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            ...textStyles.body,
-            fontWeight: "bold",
-            fontSize: 16,
-          }}
-        >
-          3
-        </Badge>
+        {notifications.length > 0 && (
+          <Badge
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              ...textStyles.body,
+              fontWeight: "bold",
+              fontSize: 16,
+            }}
+          >
+            {notifications.length}
+          </Badge>
+        )}
       </View>
     </View>
   );

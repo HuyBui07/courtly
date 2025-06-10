@@ -115,6 +115,7 @@ const BottomSheet = ({
             court_id: number;
             start_time: string;
             end_time: string;
+            allow_pickup: boolean;
           } => order !== null
         );
 
@@ -132,7 +133,7 @@ const BottomSheet = ({
           bookingOrder: JSON.stringify(bookingOrder),
         },
       });
-      bookCourt(bookingOrder);
+      // bookCourt(bookingOrder);
       return;
     }
 
