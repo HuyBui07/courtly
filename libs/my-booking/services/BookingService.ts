@@ -7,11 +7,12 @@ import {
   GET_USER_UPCOMING_PICKUPS_URL,
   CREATE_PICKUP_URL,
   GET_PICKUP_PARTICIPATED_STATE_URL,
+  CANCEL_PICKUP_URL,
+  TOURNAMENT_PAYMENT_SUCCESS_URL,
 } from "../constants";
 
 import { TokenManager } from "@/libs/store/persistStore";
 import { BookingOrder } from "../types/BookingOrder";
-import { Pickup } from "../types";
 import { PickupMetadataPayload } from "../types/PickupMetadataPayload";
 
 export const BookingService = {
@@ -115,6 +116,20 @@ export const BookingService = {
       throw new Error(error.message);
     }
   },
+  tournamentPaymentSuccess: async (tournamentId: string, paymentStatus: string) => {
+    console.log("tournamentId", tournamentId);
+    console.log("paymentStatus", paymentStatus);
+    try {
+      const response = await fetch(TOURNAMENT_PAYMENT_SUCCESS_URL + "?tournament_id=" + tournamentId + "&paymentStatus=" + paymentStatus, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+      });
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
   getUserUpcomingPickups: async () => {
     try {
       const response = await fetch(GET_USER_UPCOMING_PICKUPS_URL, {
@@ -164,6 +179,24 @@ export const BookingService = {
         throw new Error(errorText);
       }
       return response.json();
+    } catch (error: any) {
+      throw new Error(error.message);
+    }
+  },
+  cancelPickup: async (pickupID: string) => {
+    try {
+      console.log("pickupID", pickupID);
+      const response = await fetch(CANCEL_PICKUP_URL + "?pickup_id=" + pickupID, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await TokenManager.get()}`,
+        },
+      });
+      if (!response.ok) {
+        const errorText = (await response.text()).trim();
+        throw new Error(errorText);
+      }
+      return response.text();
     } catch (error: any) {
       throw new Error(error.message);
     }

@@ -218,3 +218,37 @@ func GetPickupParticipatedStateHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(state)
 }
+
+func CancelPickupHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	pickupID := r.URL.Query().Get("pickup_id")
+	if pickupID == "" {
+		http.Error(w, "pickup_id is required", http.StatusBadRequest)
+		return
+	}
+	
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+	
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
+	err = services.CancelPickup(pickupID, user.ID.Hex())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Pickup canceled successfully"))	
+}

@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { Icon, IconButton, TextInput } from "react-native-paper";
 
@@ -58,17 +58,9 @@ export const CourtDetailsModal = () => {
     <Modal
       isVisible={isVisible}
       onBackdropPress={CourtDetailsModalController.hide}
-      containerStyle={{ width: "80%", paddingVertical: 32 }}
+      containerStyle={styles.modalContainer}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 20,
-          gap: 8,
-          justifyContent: "space-between",
-        }}
-      >
+      <View style={styles.headerContainer}>
         <Text style={textStyles.titleSmall}>
           {isPickupModalVisible ? "Open for pickup" : "Details"}
         </Text>
@@ -81,7 +73,7 @@ export const CourtDetailsModal = () => {
       </View>
 
       {!isPickupModalVisible && (
-        <View style={{ alignItems: "flex-start", width: "100%", gap: 8 }}>
+        <View style={styles.detailsContainer}>
           <InformationLine title="Court" value={details.court} />
           <InformationLine title="Date" value={details.date} />
           <InformationLine title="Time" value={details.time} />
@@ -103,49 +95,33 @@ export const CourtDetailsModal = () => {
       )}
 
       {!isPickupModalVisible && (
-        <View style={{ gap: 16, flexDirection: "row", width: "100%" }}>
+        <View style={[styles.buttonContainer, { marginTop: 16 }]}>
           {details.isJoinable && !details.isPickedUp && (
             <TouchableOpacity
               onPress={() => {
                 setIsPickupModalVisible(true);
               }}
-              style={{
-                marginTop: 16,
-                height: 50,
-                flex: 1,
-                backgroundColor: colors.primary,
-                borderRadius: 10,
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 8,
-              }}
+              style={styles.pickupButton}
             >
               <Icon source="account-plus" size={20} color="white" />
-              <Text style={{ ...textStyles.bodyBold, color: "white" }}>
+              <Text style={[textStyles.bodyBold, styles.buttonText]}>
                 Pick up
               </Text>
             </TouchableOpacity>
-          ) }
+          )}
 
           <TouchableOpacity
-            onPress={details.onCancel}
-            disabled={!details.onCancel}
-            style={{
-              marginTop: 16,
-              height: 50,
-              flex: 1,
-              backgroundColor: "red",
-              borderRadius: 10,
-              flexDirection: "row",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 8,
+            onPress={() => {
+              console.log("cancel");
+              console.log(details.onCancel);
+              details.onCancel?.();
+              setIsPickupModalVisible(false);
             }}
+            style={styles.cancelButton}
           >
             <Icon source="close" size={20} color="white" />
-            <Text style={{ ...textStyles.bodyBold, color: "white" }}>
-              {details.isPickedUp ? "Cancel Pickup" : "Cancel Booking"}
+            <Text style={[textStyles.bodyBold, styles.buttonText]}>
+              {details.isPickedUp ? "Cancel Pickup" : "Cancel"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -153,21 +129,13 @@ export const CourtDetailsModal = () => {
 
       {isPickupModalVisible && (
         <Animated.View
-          style={{
-            width: "100%",
-            flexDirection: "column",
-            gap: 16,
-            marginVertical: 8,
-            backgroundColor: colors.superLightPrimary,
-            padding: 16,
-            borderRadius: 12,
-          }}
+          style={styles.pickupModalContainer}
           entering={StretchInY}
           exiting={StretchOutY}
         >
-          <View style={{ flexDirection: "row", gap: 16, width: "100%" }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ marginBottom: 8, ...textStyles.bodyBold }}>
+          <View style={styles.pickupInputRow}>
+            <View style={styles.pickupInputColumn}>
+              <Text style={[textStyles.bodyBold, styles.inputLabel]}>
                 Level:
               </Text>
               <LevelFilterDropdown
@@ -176,8 +144,8 @@ export const CourtDetailsModal = () => {
                 }}
               />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={{ marginBottom: 8, ...textStyles.bodyBold }}>
+            <View style={styles.pickupInputColumn}>
+              <Text style={[textStyles.bodyBold, styles.inputLabel]}>
                 Max Pickups:
               </Text>
               <MaximumFilterDropdown
@@ -197,38 +165,22 @@ export const CourtDetailsModal = () => {
             error={!!formik.errors.message && formik.touched.message}
             multiline
           />
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={styles.pickupButtonRow}>
             <TouchableOpacity
-              onPress={() => setIsPickupModalVisible(false)}
-              style={{
-                flex: 1,
-                backgroundColor: "red",
-                paddingVertical: 16,
-                borderRadius: 10,
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                gap: 8,
+              onPress={() => {
+                setIsPickupModalVisible(false);
               }}
+              style={styles.cancelButton}
             >
-              <Text style={{ color: "white", fontWeight: "bold" }}>Cancel</Text>
+              <Text style={styles.buttonText}>Cancel</Text>
               <Icon source="close" size={20} color="white" />
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => formik.handleSubmit()}
-              style={{
-                flex: 1,
-                backgroundColor: colors.primary,
-                paddingVertical: 16,
-                borderRadius: 10,
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                gap: 8,
-              }}
+              style={styles.openButton}
             >
-              <Text style={{ color: "white", fontWeight: "bold" }}>Open</Text>
+              <Text style={styles.buttonText}>Open</Text>
               <Icon source="check" size={20} color="white" />
             </TouchableOpacity>
           </View>
@@ -239,15 +191,99 @@ export const CourtDetailsModal = () => {
         icon="close"
         size={24}
         onPress={() => {
-          // setIsPickupModalVisible(false);
           CourtDetailsModalController.hide();
         }}
-        style={{
-          position: "absolute",
-          top: 4,
-          right: 4,
-        }}
+        style={styles.closeButton}
       />
     </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  modalContainer: {
+    width: "80%",
+    paddingVertical: 32,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    gap: 8,
+    justifyContent: "space-between",
+  },
+  detailsContainer: {
+    alignItems: "flex-start",
+    width: "100%",
+    gap: 8,
+  },
+  buttonContainer: {
+    gap: 16,
+    flexDirection: "row",
+    width: "100%",
+    marginTop: 16,
+  },
+  pickupButton: {
+    height: 50,
+    flex: 1,
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "red",
+    height: 50,
+    // paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  openButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  pickupModalContainer: {
+    width: "100%",
+    flexDirection: "column",
+    gap: 16,
+    marginVertical: 8,
+    backgroundColor: colors.superLightPrimary,
+    padding: 16,
+    borderRadius: 12,
+  },
+  pickupInputRow: {
+    flexDirection: "row",
+    gap: 16,
+    width: "100%",
+  },
+  pickupInputColumn: {
+    flex: 1,
+  },
+  inputLabel: {
+    marginBottom: 8,
+  },
+  pickupButtonRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  closeButton: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+  },
+});

@@ -50,6 +50,7 @@ func CreateCourtBooking(orders []BookingOrder) error {
 		// Kiểm tra khoảng thời gian đã được book chưa
 		filter := bson.M{
 			"court_id": order.CourtID,
+			"state": "Booked",
 			"$or": []bson.M{
 				{"start_time": bson.M{"$lt": order.EndTime}, "end_time": bson.M{"$gt": order.StartTime}},
 			},
@@ -352,6 +353,12 @@ func CancelBookingByID(bookingID string, userID string) error {
 	_, err = collection.UpdateOne(context.TODO(), filter, bson.M{"$set": bson.M{"state": "Cancelled"}})
 	if err != nil {
 		return errors.New("failed to cancel booking")
+	}
+
+	pickupCollection := config.GetCollection("Pickups")
+	_, err = pickupCollection.DeleteOne(context.TODO(), bson.M{"court_booking_id": bookingID})
+	if err != nil {
+		return errors.New("failed to remove associated pickup")
 	}
 
 	return nil

@@ -275,3 +275,43 @@ func GetPickupParticipatedState(bookingID string, hostID string) (map[string]int
 		"users":          participants,
 	}, nil
 }
+
+func CancelPickup(pickupID string, userID string) error {
+	collection := config.GetCollection("Pickups")
+
+	pickupObjID, err := primitive.ObjectIDFromHex(pickupID)
+	if err != nil {
+		return err
+	}
+
+	var pickup models.Pickup
+	err = collection.FindOne(context.TODO(), bson.M{"_id": pickupObjID}).Decode(&pickup)
+	if err != nil {
+		return err
+	}
+
+	userObjID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
+
+	// Remove userID from participant list
+	var newParticipants []primitive.ObjectID
+	for _, participantID := range pickup.ParticipantIDs {
+		if participantID != userObjID {
+			newParticipants = append(newParticipants, participantID)
+		}
+	}
+
+	// Update pickup with new participant list
+	_, err = collection.UpdateOne(
+		context.TODO(),
+		bson.M{"_id": pickupObjID},
+		bson.M{"$set": bson.M{"participant_ids": newParticipants}},
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

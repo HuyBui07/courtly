@@ -21,6 +21,7 @@ type Tournament struct {
 	Deadline    time.Time            `bson:"deadline" json:"deadline"`
 	Period      []time.Time          `bson:"period" json:"period"` // [startDate, endDate]
 	Scale       int                  `bson:"scale" json:"scale"`   // Max number of athletes
+	Price       int32            `bson:"price" json:"price"`   // Tournament registration price
 	CreatedAt   time.Time            `bson:"created_at" json:"created_at"`
 	UpdatedAt   time.Time            `bson:"updated_at" json:"updated_at"`
 }

@@ -9,9 +9,10 @@ interface TournamentViewProps {
   tour_id: string;
   deadline: string;
   type: string;
+  poster: string;
 }
 
-const TournamentView = ({ tour_id, deadline, type }: TournamentViewProps) => {
+const TournamentView = ({ tour_id, deadline, type, poster }: TournamentViewProps) => {
   const router = useRouter();
 
   const now = new Date();
@@ -24,9 +25,9 @@ const TournamentView = ({ tour_id, deadline, type }: TournamentViewProps) => {
 
   const getImage = () => {
     if (type === "single") {
-      return require("../../../../assets/images/levels/single.png");
+      return require("../../../assets/images/levels/single.png");
     } else {
-      return require("../../../../assets/images/levels/doubles.png");
+      return require("../../../assets/images/levels/doubles.png");
     }
   };
 

@@ -5,7 +5,7 @@ import { Text } from "react-native-paper";
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 
-import TournamentView from "@/libs/commons/design-system/components/TournamentView";
+import TournamentView from "@/libs/home/components/TournamentView";
 import { useGetTournaments } from "../hooks/queries/useGetTournaments";
 import { Tournament } from "../models/TournamentModel";
 import LoadingCircleForComponents from "@/libs/commons/design-system/components/LoadingCircleForComponents";
@@ -70,6 +70,7 @@ const TournarmentSection = () => {
               tour_id={tournament._id}
               deadline={tournament.deadline}
               type={tournament.type}
+              poster={tournament.poster}
             />
           ))}
         </ScrollView>

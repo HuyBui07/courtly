@@ -1,4 +1,11 @@
-import { View, StyleSheet, Text, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,11 +31,12 @@ const TournamentScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.titleContainer}>
-        <MaterialIcons name="emoji-events" size={24} color="black" />
+        <MaterialIcons name="emoji-events" size={24} color="white" />
         <Text style={styles.title}>{tournament?.name}</Text>
       </View>
+
       <View style={styles.imageContainer}>
         <Image
           source={{
@@ -38,32 +46,46 @@ const TournamentScreen = () => {
           resizeMode="contain"
         />
       </View>
-      <View style={styles.descriptionRow}>
-        <FontAwesome5 name="info-circle" size={20} color="black" />
-        <Text style={styles.description}>
-          <Text style={{ fontWeight: "bold" }}>Mô tả:</Text>{" "}
-          {tournament?.description}
-        </Text>
+
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionTitle}>Thông tin chung</Text>
+        <View style={styles.descriptionRow}>
+          <FontAwesome5 name="info-circle" size={20} color="black" />
+          <Text style={styles.description}>
+            <Text style={{ fontWeight: "bold" }}>Mô tả:</Text>{" "}
+            {tournament?.description}
+          </Text>
+        </View>
+
+        <View style={styles.descriptionRow}>
+          <MaterialIcons name="access-time" size={20} color="black" />
+          <Text style={styles.description}>
+            <Text style={{ fontWeight: "bold" }}>Thời gian:</Text>{" "}
+            {readableDeadline}
+          </Text>
+        </View>
+
+        <View style={styles.descriptionRow}>
+          <Ionicons name="people" size={20} color="black" />
+          <Text style={styles.description}>
+            <Text style={{ fontWeight: "bold" }}>Số lượng người tham gia:</Text>{" "}
+            {tournament?.Athletes?.length || 0}/{tournament?.scale}
+          </Text>
+        </View>
+
+        <View style={styles.descriptionRow}>
+          <MaterialIcons name="money" size={20} color="black" />
+          <Text style={styles.description}>
+            <Text style={{ fontWeight: "bold" }}>Giá trọng:</Text>{" "}
+            {tournament?.price.toLocaleString("vi-VN")} VND
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.descriptionRow}>
-        <MaterialIcons name="access-time" size={20} color="black" />
-        <Text style={styles.description}>
-          <Text style={{ fontWeight: "bold" }}>Thời gian:</Text>{" "}
-          {readableDeadline}
-        </Text>
-      </View>
+      <HoldButton tournament={tournament} />
 
-      <View style={styles.descriptionRow}>
-        <Ionicons name="people" size={20} color="black" />
-        <Text style={styles.description}>
-          <Text style={{ fontWeight: "bold" }}>Số lượng người tham gia:</Text>{" "}
-          {tournament?.scale}/{tournament?.scale}
-        </Text>
-      </View>
-
-      <HoldButton />
-    </View>
+      <View style={{ height: 60 }} />
+    </ScrollView>
   );
 };
 
@@ -73,7 +95,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    gap: 32,
+    gap: 28,
     paddingTop: 40,
   },
   titleContainer: {
@@ -81,38 +103,46 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    marginHorizontal: 20,
+    backgroundColor: colors.primary,
+    color: "white",
+    paddingHorizontal: 16,
+    paddingVertical: 24,
+    borderRadius: 40,
+    marginBottom: 28,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "white",
   },
   descriptionRow: {
     flexDirection: "row",
     gap: 10,
     alignItems: "center",
   },
-  description: {
-    fontSize: 20,
-    flex: 1,
-  },
-  joinButton: {
-    backgroundColor: colors.primary,
-    padding: 16,
+  descriptionContainer: {
+    gap: 16,
+    padding: 24,
     borderRadius: 12,
-    alignItems: "center",
-    marginTop: 20,
+    borderWidth: 1,
+    borderColor: colors.lightPrimary,
+    backgroundColor: colors.superLightPrimary,
+    marginBottom: 28,
   },
-  joinButtonText: {
-    color: "white",
+  descriptionTitle: {
     fontSize: 16,
     fontWeight: "bold",
+    color: colors.primary,
+  },
+  description: {
+    fontSize: 16,
+    flex: 1,
   },
   imageContainer: {
     width: "100%",
     height: 200,
-    borderRadius: 12,
     overflow: "hidden",
+    marginBottom: 28,
   },
   image: {
     width: "100%",

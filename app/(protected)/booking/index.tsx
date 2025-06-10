@@ -12,14 +12,21 @@ import { Booking } from "@/libs/my-booking/types/Booking";
 import LottieView from "lottie-react-native";
 import { BOTTOM_TAB_BAR_HEIGHT } from "@/libs/commons/design-system/constants";
 import { useGetUserUpcomingPickups } from "@/libs/my-booking/hooks/queries/useGetUserUpcomingPickups";
+import { useGetTournaments } from "@/libs/home/hooks/queries/useGetTournaments";
+import { Pickup } from "@/libs/my-booking/types/Pickup";
+import { Tournament } from "@/libs/home/models/TournamentModel";
+import TournamentComponent from "@/libs/my-booking/components/TournamentComponent";
 
 const BookingScreen = () => {
   const [time, setTime] = useState("upcoming");
   const { data: bookings, isLoading: isLoadingBookings } = useGetUserBookings();
   const { data: upcomingPickups, isLoading: isLoadingUpcomingPickups } =
     useGetUserUpcomingPickups();
+  const { data: tournaments, isLoading: isLoadingTournaments } =
+    useGetTournaments();
+  const registeredTournaments = tournaments?.filter((tournament: Tournament) => tournament.is_register);
 
-  const isLoading = isLoadingBookings || isLoadingUpcomingPickups;
+  const isLoading = isLoadingBookings || isLoadingUpcomingPickups || isLoadingTournaments;
 
   // Action button
   const [isABExtended, setIsABExtended] = useState(true);
@@ -31,9 +38,19 @@ const BookingScreen = () => {
 
   const renderBookings = () => {
     if (time === "upcoming") {
-      return [...(bookings?.upcoming_bookings || []), ...(upcomingPickups || [])];
+      return [...(bookings?.upcoming_bookings || []), ...(upcomingPickups || []), ...(registeredTournaments || [])];
     }
     return bookings?.past_bookings;
+  };
+
+  const renderItem = ({ item }: { item: Booking | Pickup | Tournament }) => {
+    if ("tour_id" in item && "is_register" in item && item.is_register) {
+      return <TournamentComponent tournament={item as Tournament} />;
+    }
+    if ("court_id" in item) {
+      return <CalendarComponent booking={item as Booking | Pickup} />;
+    }
+    return null;
   };
 
   return (
@@ -82,12 +99,7 @@ const BookingScreen = () => {
         }}
         showsVerticalScrollIndicator={false}
         data={isLoading ? [] : renderBookings()}
-        renderItem={({ item: booking }) => (
-          <CalendarComponent
-            key={booking.court_id + booking.start_time}
-            booking={booking}
-          />
-        )}
+        renderItem={renderItem}
         ListEmptyComponent={
           isLoading ? (
             <View

@@ -1,3 +1,8 @@
+type Athlete = {
+  user_id: string;
+  athlete_id: string;
+}
+
 export interface Tournament {
   _id: string;
   name: string;
@@ -7,4 +12,6 @@ export interface Tournament {
   deadline: string;
   period: string[];
   scale: number;
+  athletes: Athlete[];
+  is_register: boolean;
 }

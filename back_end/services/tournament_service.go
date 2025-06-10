@@ -33,7 +33,7 @@ func GetAllTournaments() ([]models.Tournament, error) {
 }
 
 
-func CreateTournament(name, description, poster, tType string, deadline time.Time, period []time.Time, scale int) error {
+func CreateTournament(name, description, poster, tType string, deadline time.Time, period []time.Time, scale int, price int32) error {
 	collection := config.GetCollection("Tournaments")
 
 	if len(period) != 2 {
@@ -54,6 +54,7 @@ func CreateTournament(name, description, poster, tType string, deadline time.Tim
 		Deadline:    deadline,
 		Period:      period,
 		Scale:       scale,
+		Price:       price,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -62,7 +63,7 @@ func CreateTournament(name, description, poster, tType string, deadline time.Tim
 	return err
 }
 
-func RegisterToTournament(userID, tourID, athlete1, athlete2 string) error {
+func RegisterToTournament(tourID, userID, email string) error {
 	collection := config.GetCollection("Tournaments")
 
 	// Tìm tournament
@@ -97,8 +98,7 @@ func RegisterToTournament(userID, tourID, athlete1, athlete2 string) error {
 	// Tạo đối tượng athlete
 	newAthlete := models.TournamentAthlete{
 		UserID:   userID,
-		Athlete1: athlete1,
-		Athlete2: athlete2,
+		Athlete1: email,
 	}
 
 	// Cập nhật tournament
@@ -179,3 +179,11 @@ func CancelTournamentRegistration(tourID string, userID string) error {
 	return nil
 }
 
+func PostUnpaidTournament(unpaidTournament models.UnpaidTournament) error {
+	collection := config.GetCollection("UnpaidTournaments")
+	_, err := collection.InsertOne(context.TODO(), unpaidTournament)
+	if err != nil {
+		return errors.New("failed to insert unpaid tournament")
+	}
+	return nil
+}

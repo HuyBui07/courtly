@@ -27,4 +27,9 @@ export const textStyles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Poppins-Bold",
   },
+
+  bodyBoldVietnamese: {
+    fontSize: 14,
+    includeFontPadding: false,
+  },
 });

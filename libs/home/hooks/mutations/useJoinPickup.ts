@@ -12,6 +12,7 @@ export const useJoinPickup = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pickups"] });
+      queryClient.invalidateQueries({ queryKey: ["user-upcoming-pickups"] });
       LoadingStateController.setLoading(false);
       PickupDetailsModalController.hide();
     },

@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"back_end/config"
 	"back_end/models"
 	"back_end/services"
-	"back_end/config"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -149,11 +149,8 @@ func CreatePaymentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func SuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Success payment")
 	orderCodeStr := r.URL.Query().Get("orderCode")
-	fmt.Println("orderCodeStr", orderCodeStr)
 	orderCode, err := strconv.ParseInt(orderCodeStr, 10, 64)
-	fmt.Println("orderCode", orderCode)
 	if err != nil {
 		log.Printf("Failed to parse order code: %v", err)
 		http.Error(w, "Invalid order code", http.StatusBadRequest)
@@ -205,6 +202,77 @@ func SuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func TournamentPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	domain := "http://localhost:8080/"
+
+	tournamentID := r.URL.Query().Get("tournament_id")
+	fmt.Println(tournamentID)
+
+	collection := config.GetCollection("Tournaments")
+	var tournament models.Tournament
+	err := collection.FindOne(context.TODO(), bson.M{"tour_id": tournamentID}).Decode(&tournament)
+	if err != nil {
+		log.Printf("Failed to get tournament: %v", err)
+		http.Error(w, "Failed to get tournament", http.StatusInternalServerError)
+		return
+	}
+
+	paymentLinkRequest := payos.CheckoutRequestType{
+		OrderCode:   time.Now().UnixNano() / int64(time.Millisecond),
+		Amount:      int(tournament.Price),
+		Description: "Thanh toan don hang",
+		Items: []payos.Item{
+			{
+				Name:     "Tournament",
+				Quantity: 1,
+				Price:    int(tournament.Price),
+			},
+		},
+		CancelUrl: domain + "tournament-cancel",
+		ReturnUrl: domain + "tournament-success",
+	}
+
+	paymentLinkResponse, err := payos.CreatePaymentLink(paymentLinkRequest)
+	if err != nil {
+		log.Printf("Failed to create payment link: %v", err)
+		http.Error(w, "Failed to create payment link", http.StatusInternalServerError)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Create payment link failed: %v", err)
+	}
+
+	http.Redirect(w, r, paymentLinkResponse.CheckoutUrl, http.StatusSeeOther)
+}
+
+func TournamentSuccessPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Tournament success payment")
+	tournamentID := r.URL.Query().Get("tournament_id")
+	paymentStatus := r.URL.Query().Get("paymentStatus")
+	fmt.Println("paymentStatus", paymentStatus)
+
+	// Lấy user từ token header
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
+	if paymentStatus == "PAID" {
+		services.RegisterToTournament(tournamentID, user.User_id, *user.Email)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func CancelPaymentHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Cancel payment")
 }
+

@@ -8,6 +8,7 @@ export const useCreatePickup = () => {
     mutationFn: (payload: PickupMetadataPayload) => BookingService.createPickup(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["pickupParticipatedState"] });
     },
     onError: (error) => {
       console.log("error", error);

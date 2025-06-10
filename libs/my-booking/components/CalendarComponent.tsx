@@ -1,12 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Icon } from "react-native-paper";
-import { LinearTransition } from "react-native-reanimated";
 
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
-import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
 import { Booking } from "../types/Booking";
 import { formatDate } from "@/libs/commons/utils";
 import { InformationLine } from "./InformationLine";
@@ -14,6 +12,7 @@ import { CourtDetailsModalController } from "@/libs/commons/stores/useCourtDetai
 import { useCancelBookingState } from "../hooks/mutations/useCancelBookingState";
 import { Pickup } from "../types";
 import { useGetPickupParticipatedState } from "../hooks/queries/useGetPickupParticipatedState";
+import { useCancelPickup } from "../hooks/mutations/useCancelPickup";
 
 const StateText = ({ state }: { state: string }) => {
   const color = state === "Cancelled" ? "red" : colors.primary;
@@ -64,6 +63,7 @@ const formatTime = (start: string, end: string) => {
 
 const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
   const { mutate: cancelBooking } = useCancelBookingState();
+  const { mutate: cancelPickup } = useCancelPickup();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
   const { data: pickupParticipatedState } = useGetPickupParticipatedState(
@@ -81,7 +81,6 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
     const price = durationHours * 80;
 
-    console.log("booking", booking);
     CourtDetailsModalController.show({
       court_booking_id: booking._id,
       court: booking.court_id.toString(),
@@ -93,19 +92,19 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       additionalServices: booking.additional_services,
       isJoinable: !booking.allow_pickup,
       isPickedUp: isThisComponentPickedUp,
-      onCancel:
-        !isPast && !isThisComponentPickedUp
-          ? () => {
-              cancelBooking(booking._id);
-              CourtDetailsModalController.hide();
-            }
-          : undefined,
+      onCancel: () => {
+        if (isPast) return;
+        if (isThisComponentPickedUp) {
+          cancelPickup(booking.pickup_id as string);
+        } else {
+          cancelBooking(booking._id);
+        }
+      },
     });
   };
 
   return (
-    <AnimatedTouchableOpacity
-      layout={LinearTransition.springify()}
+    <TouchableOpacity
       onPress={showDetailsModal}
       disabled={booking.state !== "Booked" || isPast}
       style={[
@@ -118,11 +117,20 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       {!isPast && (
         <StateText
           state={
-            isThisComponentPickedUp
-              ? "You've picked up"
-              : booking?.allow_pickup
-              ? `Picking up ${pickupParticipatedState?.users?.length || 0} / ${pickupParticipatedState?.maximum_pickups}`
-              : booking.state
+            (() => {
+              if (booking.state === "Cancelled") {
+                return "Cancelled";
+              }
+              if (isThisComponentPickedUp) {
+                return "You've picked up";
+              } else if (booking?.allow_pickup) {
+                return `Picking up ${pickupParticipatedState?.users?.length || 0} / ${
+                  pickupParticipatedState?.maximum_pickups 
+                }`;
+              } else {
+                return booking.state;
+              }
+            })()
           }
         />
       )}
@@ -130,7 +138,7 @@ const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
       <InformationLine title="Court" value={booking.court_id.toString()} />
       <InformationLine title="Date" value={formattedDate} />
       <InformationLine title="Time" value={formattedTime} />
-    </AnimatedTouchableOpacity>
+    </TouchableOpacity>
   );
 };
 
