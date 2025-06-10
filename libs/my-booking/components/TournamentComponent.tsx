@@ -3,13 +3,23 @@ import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
 import { InformationLine } from "./InformationLine";
 import { formatDate } from "@/libs/commons/utils";
 import { textStyles } from "@/libs/commons/design-system/styles";
+import { TournamentDetailsModalController } from "../store/useTournamentDetailsModalStore";
 
 const TournamentComponent = ({ tournament }: { tournament: Tournament }) => {
   const formattedType = tournament.type === "single" ? "Đánh đơn" : "Đánh đôi";
   const formattedDate = formatDate(tournament.deadline);
 
   return (
-    <TouchableOpacity style={[styles.container, {borderColor: tournament.type === "single" ? "red" : "blue"}]}>
+    <TouchableOpacity style={[styles.container, {borderColor: tournament.type === "single" ? "red" : "blue"}]} onPress={() => {
+      TournamentDetailsModalController.show({
+        name: tournament.name,
+        description: tournament.description,
+        type: tournament.type,
+        period: [tournament.period[0], tournament.period[1]],
+        number_of_players: tournament.athletes.length,
+        scale: tournament.scale,
+      });
+    }}>
       <View style={styles.content}>
         <InformationLine title="Name" value={tournament.name} isVietnamese />
         <InformationLine title="Type" value={formattedType} isVietnamese />

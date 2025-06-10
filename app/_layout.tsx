@@ -18,6 +18,7 @@ import { queryClient } from "@/libs/commons/utils";
 import { PickupDetailsModal } from "@/libs/home/components/PickupDetailsModal";
 import messaging from "@react-native-firebase/messaging";
 import { useNotifications } from "@/libs/store/useNotifications";
+import TournamentDetailsModal from "@/libs/my-booking/components/TournamentDetailsModal";
 
 enableLayoutAnimations(true);
 
@@ -76,7 +77,8 @@ export default function RootLayout() {
           <NotificationModal />
           <CourtDetailsModal />
           <PickupDetailsModal />
-          <LoadingCircle />
+          <TournamentDetailsModal />
+            <LoadingCircle />
         </View>
       </PaperProvider>
     </QueryClientProvider>
