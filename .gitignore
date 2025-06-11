@@ -40,4 +40,4 @@ app-example
 # Android
 android/
 
-back_end/admin-sdk.json
+app/back_end/admin-sdk.json
