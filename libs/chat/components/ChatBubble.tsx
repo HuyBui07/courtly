@@ -1,68 +1,67 @@
-import { View, Text, StyleSheet } from "react-native";
-import { Image } from "expo-image";
-import { textStyles } from "@/libs/commons/design-system/styles";
+// libs/chat/components/ChatBubble.tsx
 import { colors } from "@/libs/commons/design-system/colors";
+import { View, Text, StyleSheet } from "react-native";
 
 interface ChatBubbleProps {
+  email: string;
   message: string;
-  avatarUrl?: string;
-  senderName?: string;
+  isOwnMessage?: boolean;
 }
 
-const ChatBubble = ({ message, avatarUrl, senderName }: ChatBubbleProps) => {
+const ChatBubble: React.FC<ChatBubbleProps> = ({
+  email,
+  message,
+  isOwnMessage,
+}) => {
   return (
     <View style={styles.container}>
-      {avatarUrl && (
-        <Image
-          source={{
-            uri: avatarUrl,
-          }}
-          style={{
-            height: 40,
-            width: 40,
-            borderRadius: 999,
-            marginTop: "auto",
-          }}
-          contentFit="cover"
-        />
+      {!isOwnMessage && (
+        <Text
+          style={[
+            styles.emailText,
+            { alignSelf: isOwnMessage ? "flex-end" : "flex-start" },
+          ]}
+        >
+          {email}
+        </Text>
       )}
       <View
         style={[
           styles.bubble,
-          avatarUrl
-            ? { borderBottomLeftRadius: 5 }
-            : { borderBottomRightRadius: 5, marginLeft: "auto" },
+          isOwnMessage ? styles.ownBubble : styles.otherBubble,
         ]}
       >
-        <Text
-          style={{
-            ...textStyles.body,
-            color: "white",
-            fontSize: 16,
-            padding: 10,
-          }}
-        >
-          {message}
-        </Text>
+        <Text>{message}</Text>
       </View>
     </View>
   );
 };
 
-export default ChatBubble;
-
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    marginBottom: 20,
-    width: "100%",
+    marginVertical: 10,
+    flexDirection: "column",
+  },
+  emailText: {
+    fontSize: 12,
+    fontWeight: "200",
+    alignSelf: "flex-start",
+    marginHorizontal: 8,
+    marginBottom: 4,
   },
   bubble: {
-    backgroundColor: colors.primary,
     borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginRight: 10,
+    padding: 14,
     maxWidth: "80%",
   },
+  ownBubble: {
+    backgroundColor: colors.lightPrimary,
+    alignSelf: "flex-end",
+  },
+  otherBubble: {
+    backgroundColor: "#f0f0f0",
+    alignSelf: "flex-start",
+  },
 });
+
+export default ChatBubble;

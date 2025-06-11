@@ -1,57 +1,53 @@
 // screens/NotificationsScreen.tsx
 
 import React, { useState } from "react";
-import {
-  View,
-  FlatList,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import { Text, useTheme, Avatar, Button } from "react-native-paper";
+import { View, FlatList, TouchableOpacity } from "react-native";
+import { Text, useTheme, Avatar } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
+import { useNotifications } from "@/libs/store/useNotifications";
 
 const tabs = ["Tất cả", "Ưu đãi", "Cập nhật"];
-
-const notifications = Array(6).fill({
-  title: "Bạn có ưu đãi mới!",
-  description: "Giảm 20% cho lần đặt hàng tiếp theo.",
-  time: "2 giờ trước.",
-});
 
 const NotificationsScreen = () => {
   const theme = useTheme();
   const [activeTab, setActiveTab] = useState("Tất cả");
-  const navigation = useNavigation();
+  const { notifications } = useNotifications() as any;
 
   const renderItem = ({ item }: { item: any }) => (
-    <View
+    <TouchableOpacity
+      onPress={() => {
+        router.push(`/booking`);
+      }}
       style={{
         flexDirection: "row",
         alignItems: "flex-start",
         paddingVertical: 12,
       }}
     >
-      <Avatar.Icon size={40} icon="bell" style={{ backgroundColor: theme.colors.primary }} />
+      <Avatar.Icon
+        size={40}
+        icon="bell"
+        style={{ backgroundColor: theme.colors.primary }}
+      />
       <View style={{ marginLeft: 12, flex: 1 }}>
         <Text variant="bodyLarge" style={{ fontWeight: "bold" }}>
           {item.title}
         </Text>
         <Text variant="bodyMedium" style={{ color: "#666" }}>
-          {item.description}
-        </Text>
-        <Text variant="bodySmall" style={{ color: "#aaa", marginTop: 4 }}>
-          {item.time}
+          {item.body}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
       {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
+      >
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
         <Text
@@ -69,7 +65,8 @@ const NotificationsScreen = () => {
             key={tab}
             onPress={() => setActiveTab(tab)}
             style={{
-              backgroundColor: activeTab === tab ? theme.colors.primary : "#f0f0f0",
+              backgroundColor:
+                activeTab === tab ? theme.colors.primary : "#f0f0f0",
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 8,

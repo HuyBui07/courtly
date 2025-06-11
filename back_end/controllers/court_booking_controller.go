@@ -19,9 +19,13 @@ import (
 )
 
 type BookingRequest struct {
-	CourtID   int32  `json:"court_id"`
-	StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
-	EndTime   string `json:"end_time"`
+	Courts []struct {
+		CourtID   int32  `json:"court_id"`
+		StartTime string `json:"start_time"` // ISO8601 format: "2025-04-27T10:00:00Z"
+		EndTime   string `json:"end_time"`
+		AllowPickup bool `json:"allow_pickup"`
+	} `json:"courts"`
+	AdditionalServices []models.AdditionalService `json:"additional_services,omitempty"`
 }
 
 func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,8 +34,8 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var requests []BookingRequest
-	if err := json.NewDecoder(r.Body).Decode(&requests); err != nil {
+	var bookingRequest BookingRequest
+	if err := json.NewDecoder(r.Body).Decode(&bookingRequest); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
@@ -49,9 +53,10 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var orders []services.BookingOrder
-	for _, req := range requests {
-		// Check if start time is in the past
-		startTime, err := time.Parse(time.RFC3339, req.StartTime)
+	// Find the earliest court booking time
+	var earliestStartTime time.Time
+	for _, court := range bookingRequest.Courts {
+		startTime, err := time.Parse(time.RFC3339, court.StartTime)
 		if err != nil {
 			http.Error(w, "Invalid start time format", http.StatusBadRequest)
 			return
@@ -61,18 +66,33 @@ func BookCourtHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		endTime, err := time.Parse(time.RFC3339, req.EndTime)
+		if earliestStartTime.IsZero() || startTime.Before(earliestStartTime) {
+			earliestStartTime = startTime
+		}
+	}
+
+	for _, court := range bookingRequest.Courts {
+		startTime, _ := time.Parse(time.RFC3339, court.StartTime)
+		endTime, err := time.Parse(time.RFC3339, court.EndTime)
 		if err != nil {
 			http.Error(w, "Invalid end time format", http.StatusBadRequest)
 			return
 		}
 
-		orders = append(orders, services.BookingOrder{
-			CourtID:   req.CourtID,
-			UserID:    user.ID.Hex(),
-			StartTime: startTime,
-			EndTime:   endTime,
-		})
+		order := services.BookingOrder{
+			CourtID:    court.CourtID,
+			UserID:     user.ID.Hex(),
+			StartTime:  startTime,
+			EndTime:    endTime,
+			AllowPickup: court.AllowPickup,
+		}
+
+		// Attach additional services to the order with earliest start time
+		if startTime.Equal(earliestStartTime) {
+			order.AdditionalServices = bookingRequest.AdditionalServices
+		}
+
+		orders = append(orders, order)
 	}
 
 	err = services.CreateCourtBooking(orders)
@@ -112,10 +132,10 @@ func GetUserBookingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if upcomingBookings == nil {
-		upcomingBookings = []models.CourtBooking{}
+		upcomingBookings = []models.CourtBookingResponse{}
 	}
 	if pastBookings == nil {
-		pastBookings = []models.CourtBooking{}
+		pastBookings = []models.CourtBookingResponse{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -169,7 +189,7 @@ func GetBookingsForCourtOnSpecificDateHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	// Trả về danh sách booking dưới dạng JSON
@@ -204,7 +224,7 @@ func GetAllBookingsOnASpecificDateHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	// Create response objects with additional fields
@@ -247,7 +267,7 @@ func GetUserBookingsByMonthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if bookings == nil {
-		bookings = []models.CourtBooking{}
+		bookings = []models.CourtBookingResponse{}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -408,4 +428,38 @@ func DeleteBookingsOfCourtInMonthHandler(w http.ResponseWriter, r *http.Request)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Bookings for the specified court and month deleted successfully"))
+}
+
+func CancelBookingByIDHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	bookingID := r.URL.Query().Get("booking_id")
+	if bookingID == "" {
+		http.Error(w, "booking_id is required", http.StatusBadRequest)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if token == "" {
+		http.Error(w, "Missing Authorization token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	err = services.CancelBookingByID(bookingID, user.ID.Hex())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Booking cancelled successfully"))
 }

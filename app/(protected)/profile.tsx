@@ -1,8 +1,11 @@
 import React from "react";
 import { View, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
-import { Avatar, Text, useTheme } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { Avatar, Icon, Text, useTheme } from "react-native-paper";
 import { router } from "expo-router";
+import { queryClient } from "@/libs/commons/utils";
+import { TokenManager } from "@/libs/store/persistStore";
+import { useNotifications } from "@/libs/store/useNotifications";
+import { useGetPersonalData } from "@/libs/commons/hooks/useGetPersonalData";
 
 const profileOptions = [
   { icon: "account", label: "Account" },
@@ -16,6 +19,16 @@ const profileOptions = [
 
 const ProfileScreen = () => {
   const theme = useTheme();
+  const { data: user } = useGetPersonalData();
+  const name = user?.email.split("@")[0];
+
+  const handleLogout = async () => {
+    queryClient.clear();
+    await TokenManager.clear();
+    await TokenManager.clearFCMToken();
+    (useNotifications as any).getState().clearNotifications();
+    router.dismissTo("/(auth)");  
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -27,10 +40,10 @@ const ProfileScreen = () => {
         />
         <View style={{ marginLeft: 12 }}>
           <Text variant="titleMedium" style={styles.nameText}>
-            Surendhar
+            {name}
           </Text>
           <Text variant="bodySmall" style={styles.emailText}>
-            surendharpv01@gmail.com
+            {user?.email}
           </Text>
         </View>
       </View>
@@ -39,7 +52,7 @@ const ProfileScreen = () => {
       <View style={styles.optionList}>
         {profileOptions.map((item, index) => (
           <TouchableOpacity key={index} style={styles.optionItem}>
-            <Icon name={item.icon} size={24} color={theme.colors.primary} />
+            <Icon source={item.icon} size={24} color={theme.colors.primary} />
             <Text style={styles.optionText}>{item.label}</Text>
           </TouchableOpacity>
         ))}
@@ -47,12 +60,9 @@ const ProfileScreen = () => {
         {/* Logout */}
         <TouchableOpacity
           style={[styles.optionItem, { marginTop: 12 }]}
-          onPress={() => {
-            // TODO: handle logout
-            router.replace("/(auth)/");
-          }}
+          onPress={handleLogout}
         >
-          <Icon name="logout" size={24} color="red" />
+          <Icon source="logout" size={24} color="red" />
           <Text style={[styles.optionText, { color: "red" }]}>Logout</Text>
         </TouchableOpacity>
       </View>

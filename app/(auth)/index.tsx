@@ -12,6 +12,8 @@ import * as Yup from "yup";
 import { useLogin } from "@/libs/auth/hooks";
 import { NotificationModalController } from "@/libs/commons/stores/useNotificationModalStore";
 import { LoadingStateController } from "@/libs/commons/stores/useLoadingState";
+import { TokenManager } from "@/libs/store/persistStore";
+import { useEffect } from "react";
 
 const loginSchema = Yup.object().shape({
   email: Yup.string().required("User name is required"),
@@ -21,6 +23,18 @@ const loginSchema = Yup.object().shape({
 });
 
 const Login = () => {
+  const checkUserSignIn = async () => {
+    const token = await TokenManager.get();
+    if (token) {
+      console.log("token", token);
+      return router.dismissTo("/(protected)/home");
+    }
+  };
+
+  useEffect(() => {
+    checkUserSignIn();
+  }, []);
+
   const theme = useTheme();
   const { mutate } = useLogin();
 

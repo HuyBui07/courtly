@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native";
 export const textStyles = StyleSheet.create({
   title: {
     fontFamily: "Poppins-Bold",
+    fontSize: 24,
   },
 
   titleSmall: {
@@ -25,5 +26,10 @@ export const textStyles = StyleSheet.create({
   bodyBold: {
     fontSize: 14,
     fontFamily: "Poppins-Bold",
+  },
+
+  bodyBoldVietnamese: {
+    fontSize: 14,
+    includeFontPadding: false,
   },
 });

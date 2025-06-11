@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 // components
-import { ScrollView, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { Text } from "react-native-paper";
 import ActionButton from "@/libs/my-booking/components/ActionButton";
 import Header from "@/libs/home/components/Header";
@@ -11,29 +11,59 @@ import { useGetUserBookings } from "@/libs/my-booking/hooks/queries/useGetUserBo
 import { Booking } from "@/libs/my-booking/types/Booking";
 import LottieView from "lottie-react-native";
 import { BOTTOM_TAB_BAR_HEIGHT } from "@/libs/commons/design-system/constants";
+import { useGetUserUpcomingPickups } from "@/libs/my-booking/hooks/queries/useGetUserUpcomingPickups";
+import { useGetTournaments } from "@/libs/home/hooks/queries/useGetTournaments";
+import { Pickup } from "@/libs/my-booking/types/Pickup";
+import { Tournament } from "@/libs/home/models/TournamentModel";
+import TournamentComponent from "@/libs/my-booking/components/TournamentComponent";
 
 const BookingScreen = () => {
   const [time, setTime] = useState("upcoming");
-  const { data: bookings, isLoading } = useGetUserBookings();
+  const { data: bookings, isLoading: isLoadingBookings } = useGetUserBookings();
+  const { data: upcomingPickups, isLoading: isLoadingUpcomingPickups } =
+    useGetUserUpcomingPickups();
+  const { data: tournaments, isLoading: isLoadingTournaments } =
+    useGetTournaments();
+  const registeredTournaments = tournaments?.filter(
+    (tournament: Tournament) => tournament.is_register
+  );
+
+  const isLoading =
+    isLoadingBookings || isLoadingUpcomingPickups || isLoadingTournaments;
+
   // Action button
   const [isABExtended, setIsABExtended] = useState(true);
-  const onScroll = ({ nativeEvent }: any) => {
+  const onScroll = useCallback(({ nativeEvent }: any) => {
     const currentScrollPosition =
       Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
     setIsABExtended(currentScrollPosition <= 0);
-  };
+  }, []);
 
   const renderBookings = () => {
     if (time === "upcoming") {
-      return bookings?.upcoming_bookings;
+      return [
+        ...(bookings?.upcoming_bookings || []),
+        ...(upcomingPickups || []),
+        ...(registeredTournaments || []),
+      ];
     }
-    return bookings?.past_bookings;
+    return [...(bookings?.past_bookings || [])].reverse();
+  };
+
+  const renderItem = ({ item }: { item: Booking | Pickup | Tournament }) => {
+    if ("tour_id" in item && "is_register" in item && item.is_register) {
+      return <TournamentComponent tournament={item as Tournament} />;
+    }
+    if ("court_id" in item) {
+      return <CalendarComponent booking={item as Booking | Pickup} />;
+    }
+    return null;
   };
 
   return (
     <View
       style={{
-        height: "100%",
+        flex: 1,
         backgroundColor: "white",
       }}
     >
@@ -61,33 +91,41 @@ const BookingScreen = () => {
         </View>
       )}
 
-      <ScrollView
+      <FlatList
         onScroll={onScroll}
+        // scrollEventThrottle={32}
         style={{
-          width: "100%",
-          paddingHorizontal: 16,
+          flex: 1,
           marginTop: 16,
         }}
-        contentContainerStyle={{ gap: 16, paddingBottom: BOTTOM_TAB_BAR_HEIGHT * 2 + 20 }}
+        contentContainerStyle={{
+          gap: 16,
+          paddingHorizontal: 16,
+          flexGrow: 1,
+          paddingBottom: BOTTOM_TAB_BAR_HEIGHT * 2 + 20,
+        }}
         showsVerticalScrollIndicator={false}
-      >
-        {isLoading && (
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <LottieView
-              source={require("@/assets/gifs/loading.json")}
-              autoPlay
-              loop
-              style={{ width: 100, height: 100 }}
-            />
-          </View>
-        )}
-        {!isLoading &&
-          renderBookings()?.map((booking: Booking) => (
-            <CalendarComponent key={booking.court_id + booking.start_time} booking={booking} />
-          ))}
-      </ScrollView>
+        data={isLoading ? [] : renderBookings()}
+        renderItem={renderItem}
+        ListEmptyComponent={
+          isLoading ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <LottieView
+                source={require("@/assets/gifs/loading.json")}
+                autoPlay
+                loop
+                style={{ width: 100, height: 100 }}
+              />
+            </View>
+          ) : null
+        }
+      />
 
       <ActionButton isExtended={isABExtended} />
     </View>

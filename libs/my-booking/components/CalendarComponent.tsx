@@ -1,40 +1,21 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Button } from "react-native-paper";
-import Animated, {
-  LinearTransition,
-  StretchInY,
-  StretchOutY,
-} from "react-native-reanimated";
+import { Icon } from "react-native-paper";
 
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { colors } from "@/libs/commons/design-system/colors";
-import { AnimatedTouchableOpacity } from "@/libs/commons/design-system/components/AnimatedComponents";
 import { Booking } from "../types/Booking";
 import { formatDate } from "@/libs/commons/utils";
-
-const InformationLine = ({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) => {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-      }}
-    >
-      <Text style={[textStyles.body, { marginRight: 16 }]}>{title}:</Text>
-      <Text style={{ ...textStyles.bodyBold }}>{value}</Text>
-    </View>
-  );
-};
+import { InformationLine } from "./InformationLine";
+import { CourtDetailsModalController } from "@/libs/commons/stores/useCourtDetailsModalStore";
+import { useCancelBookingState } from "../hooks/mutations/useCancelBookingState";
+import { Pickup } from "../types";
+import { useGetPickupParticipatedState } from "../hooks/queries/useGetPickupParticipatedState";
+import { useCancelPickup } from "../hooks/mutations/useCancelPickup";
 
 const StateText = ({ state }: { state: string }) => {
-  const color = state === "Booked" ? colors.primary : "red";
+  const color = state === "Cancelled" ? "red" : colors.primary;
 
   return (
     <View
@@ -44,6 +25,7 @@ const StateText = ({ state }: { state: string }) => {
         top: 8,
         right: 16,
         opacity: 0.5,
+        pointerEvents: "box-none",
       }}
     >
       <Text
@@ -57,7 +39,9 @@ const StateText = ({ state }: { state: string }) => {
       </Text>
       <MaterialCommunityIcons
         name={
-            state === "Booked" ? "check-circle-outline" : "close-circle-outline"
+          state === "Cancelled"
+            ? "close-circle-outline"
+            : "check-circle-outline"
         }
         size={20}
         color={color}
@@ -70,76 +54,96 @@ const formatTime = (start: string, end: string) => {
   const startDate = new Date(start);
   const endDate = new Date(end);
   const formatTime = (date: Date) => {
-    const hours = date.getUTCHours().toString().padStart(2, '0');
-    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
     return `${hours}:${minutes}`;
   };
   return `${formatTime(startDate)} - ${formatTime(endDate)}`;
 };
 
-const CalendarComponent = ({ booking }: { booking: Booking }) => {
-  const [isExtended, setIsExtended] = useState(false);
-
+const CalendarComponent = ({ booking }: { booking: Booking | Pickup }) => {
+  const { mutate: cancelBooking } = useCancelBookingState();
+  const { mutate: cancelPickup } = useCancelPickup();
   const formattedDate = formatDate(booking.start_time);
   const formattedTime = formatTime(booking.start_time, booking.end_time);
+  const { data: pickupParticipatedState } = useGetPickupParticipatedState(
+    booking._id
+  );
   
-  const isPast = new Date(booking.end_time) < new Date();
+  const isPast =
+    new Date(booking.end_time) <
+    new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
 
-  return (  
-    <AnimatedTouchableOpacity
-      layout={LinearTransition.springify()}
-      onPress={() => setIsExtended(!isExtended)}
+  // if the pickup_id is in the booking, then the component is picked up and this user is not the host
+  const isThisComponentPickedUp = "pickup_id" in booking;
+
+  const showDetailsModal = () => {
+    const startDate = new Date(booking.start_time);
+    const endDate = new Date(booking.end_time);
+    const durationHours =
+      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+    const price = durationHours * 80;
+
+    CourtDetailsModalController.show({
+      court_booking_id: booking._id,
+      court: booking.court_id.toString(),
+      date: formattedDate,
+      time: formattedTime,
+      duration: `${durationHours} hour${durationHours > 1 ? "s" : ""}`,
+      price: price.toString() + ".000 VND",
+      status: booking.state,
+      additionalServices: booking.additional_services,
+      isJoinable: !booking.allow_pickup,
+      isPickedUp: isThisComponentPickedUp,
+      onCancel: () => {
+        if (isPast) return;
+        if (isThisComponentPickedUp) {
+          cancelPickup(booking.pickup_id as string);
+        } else {
+          cancelBooking(booking._id);
+        }
+      },
+    });
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={showDetailsModal}
+      disabled={booking.state !== "Booked" || isPast}
       style={[
         styles.container,
-        isPast && { backgroundColor: "#F5F5F5" }
+        (isPast || booking.state === "Cancelled") && {
+          backgroundColor: "#F5F5F5",
+        },
       ]}
     >
-      {!isPast && <StateText state={booking.state} />}
+      {!isPast && (
+        <StateText
+          state={(() => {
+            if (booking.state === "Cancelled") {
+              return "Cancelled";
+            }
+            if (isThisComponentPickedUp) {
+              return "You've picked up";
+            } else if (booking?.allow_pickup) {
+              return `Picking up ${
+                pickupParticipatedState?.users?.length || 0
+              } / ${pickupParticipatedState?.maximum_pickups}`;
+            } else {
+              return booking.state;
+            }
+          })()}
+        />
+      )}
 
       <InformationLine title="Court" value={booking.court_id.toString()} />
       <InformationLine title="Date" value={formattedDate} />
       <InformationLine title="Time" value={formattedTime} />
-
-      {isExtended && (
-        <Animated.View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            marginVertical: 8,
-            justifyContent: "space-between",
-          }}
-          entering={StretchInY}
-          exiting={StretchOutY}
-        >
-          <Button
-            mode="outlined"
-            labelStyle={{ fontWeight: "bold" }}
-            style={{
-              width: isPast ? "100%" : "50%",
-              borderRadius: 12,
-              borderColor: colors.primary,
-            }}
-          >
-            Details
-          </Button>
-          {!isPast && (
-            <Button
-              mode="contained"
-              buttonColor="red"
-              textColor="white"
-              labelStyle={{ fontWeight: "bold" }}
-              style={{ width: "50%", borderRadius: 12 }}
-            >
-              Cancell
-            </Button>
-          )}
-        </Animated.View>
-      )}
-    </AnimatedTouchableOpacity>
+    </TouchableOpacity>
   );
 };
 
-export default CalendarComponent;
+export default React.memo(CalendarComponent);
 
 const styles = StyleSheet.create({
   container: {

@@ -1,15 +1,16 @@
-import { View, Text } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { Button, Modal, Portal } from "react-native-paper";
 import DateTimePicker, {
   DateType,
   useDefaultStyles,
 } from "react-native-ui-datepicker";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import InformationBar from "@/libs/my-booking/components/InformationBar";
 import BookingCalendar from "@/libs/my-booking/components/BookingCalendar";
 import BottomSheet from "@/libs/my-booking/components/BottomSheet";
+import AdditionalServices from "@/libs/my-booking/components/AdditionalServices";
 import { colors } from "@/libs/commons/design-system/colors";
 import { textStyles } from "@/libs/commons/design-system/styles";
 import { useGetAllBookedCourts } from "@/libs/my-booking/hooks/queries/useGetAllBookedCourts";
@@ -34,7 +35,7 @@ const BookCourt = () => {
   );
 
   const createRange = (start: number, end: number) => {
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    return Array.from({ length: end - start }, (_, i) => start + i); 
   };
 
   const [court1BookedIndex, setCourt1BookedIndex] = useState<number[]>([]);
@@ -73,7 +74,7 @@ const BookCourt = () => {
       setCourt3BookedIndex(court3);
       setCourt4BookedIndex(court4);
     }
-  }, [bookedCourts]);
+  }, [bookedCourts, date]);
 
   const [selectedTimeBlockIndexesCourt1, setSelectedTimeBlockIndexesCourt1] =
     useState<number[]>([]);
@@ -84,100 +85,110 @@ const BookCourt = () => {
   const [selectedTimeBlockIndexesCourt4, setSelectedTimeBlockIndexesCourt4] =
     useState<number[]>([]);
 
+  const [selectedServices, setSelectedServices] = useState<{ [key: string]: number }>({});
+
+  const handleServicesChange = useCallback((services: { [key: string]: number }) => {
+    setSelectedServices(services);
+  }, []);
+
   return (
-    <GestureHandlerRootView>
-      <View
-        style={{ flex: 1, gap: 16, paddingTop: 24, backgroundColor: "white" }}
-      >
-        <Button
-          rippleColor={"white"}
-          onPress={() => setShow(true)}
-          mode="contained"
-          icon="calendar"
-          labelStyle={{ color: "black", ...textStyles.body }}
-          style={{
-            width: "40%",
-            borderRadius: 5,
-            marginLeft: 10,
-            marginRight: 10,
-            backgroundColor: "white",
-            borderWidth: 1,
-            borderColor: colors.lightGray,
-            justifyContent: "space-between",
-          }}
-        >
-          {date?.toLocaleString("en-US", {}).split(",")[0]}
-        </Button>
-
-        <Portal>
-          <Modal
-            visible={show}
-            dismissable={true}
-            onDismiss={() => setShow(false)}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1, backgroundColor: "white" }}>
+        <View style={{ gap: 16, paddingTop: 24, paddingBottom: 140 }}>
+          <Button
+            rippleColor={"white"}
+            onPress={() => setShow(true)}
+            mode="contained"
+            icon="calendar"
+            labelStyle={{ color: "black", ...textStyles.body }}
+            style={{
+              width: "40%",
+              borderRadius: 5,
+              marginLeft: 10,
+              marginRight: 10,
+              backgroundColor: "white",
+              borderWidth: 1,
+              borderColor: colors.lightGray,
+              justifyContent: "space-between",
+            }}
           >
-            <DateTimePicker
-              mode="single"
-              minDate={new Date()}
-              date={date}
-              onChange={({ date }) => selectDate(date)}
-              styles={{
-                ...defaultStyles,
-                day_label: { color: "black" },
-                selected: { backgroundColor: colors.primary },
-                selected_label: { color: "white" },
-                today: {
+            {date?.toLocaleString("en-US", {}).split(",")[0]}
+          </Button>
+
+          <Portal>
+            <Modal
+              visible={show}
+              dismissable={true}
+              onDismiss={() => setShow(false)}
+            >
+              <DateTimePicker
+                mode="single"
+                minDate={new Date()}
+                date={date}
+                onChange={({ date }) => selectDate(date)}
+                styles={{
+                  ...defaultStyles,
+                  day_label: { color: "black" },
+                  selected: { backgroundColor: colors.primary },
+                  selected_label: { color: "white" },
+                  today: {
+                    backgroundColor: "white",
+                    borderWidth: 1,
+                    borderColor: colors.primary,
+                  },
+                  today_label: { color: colors.primary },
+                  button_next_image: {
+                    tintColor: "black",
+                  },
+                  button_prev_image: {
+                    tintColor: "black",
+                  },
+                }}
+                style={{
                   backgroundColor: "white",
-                  borderWidth: 1,
-                  borderColor: colors.primary,
-                },
-                today_label: { color: colors.primary },
-                button_next_image: {
-                  tintColor: "black",
-                },
-                button_prev_image: {
-                  tintColor: "black",
-                },
-              }}
-              style={{
-                backgroundColor: "white",
-                borderRadius: 20,
-                marginHorizontal: 16,
-                padding: 16,
-              }}
-              disableYearPicker
-            />
-          </Modal>
-        </Portal>
+                  borderRadius: 20,
+                  marginHorizontal: 16,
+                  padding: 16,
+                }}
+                disableYearPicker
+              />
+            </Modal>
+          </Portal>
 
-        <InformationBar />
-        <BookingCalendar
-          selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
-          setSelectedTimeBlockIndexesCourt1={setSelectedTimeBlockIndexesCourt1}
-          bookedCourt1={court1BookedIndex}
-          selectedTimeBlockIndexesCourt2={selectedTimeBlockIndexesCourt2}
-          setSelectedTimeBlockIndexesCourt2={setSelectedTimeBlockIndexesCourt2}
-          bookedCourt2={court2BookedIndex}
-          selectedTimeBlockIndexesCourt3={selectedTimeBlockIndexesCourt3}
-          setSelectedTimeBlockIndexesCourt3={setSelectedTimeBlockIndexesCourt3}
-          bookedCourt3={court3BookedIndex}
-          selectedTimeBlockIndexesCourt4={selectedTimeBlockIndexesCourt4}
-          setSelectedTimeBlockIndexesCourt4={setSelectedTimeBlockIndexesCourt4}
-          bookedCourt4={court4BookedIndex}
-        />
+          <InformationBar />
+          <BookingCalendar
+            isToday={date ? new Date(date as Date).toDateString() === new Date().toDateString() : false}
+            selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
+            setSelectedTimeBlockIndexesCourt1={setSelectedTimeBlockIndexesCourt1}
+            bookedCourt1={court1BookedIndex}
+            selectedTimeBlockIndexesCourt2={selectedTimeBlockIndexesCourt2}
+            setSelectedTimeBlockIndexesCourt2={setSelectedTimeBlockIndexesCourt2}
+            bookedCourt2={court2BookedIndex}
+            selectedTimeBlockIndexesCourt3={selectedTimeBlockIndexesCourt3}
+            setSelectedTimeBlockIndexesCourt3={setSelectedTimeBlockIndexesCourt3}
+            bookedCourt3={court3BookedIndex}
+            selectedTimeBlockIndexesCourt4={selectedTimeBlockIndexesCourt4}
+            setSelectedTimeBlockIndexesCourt4={setSelectedTimeBlockIndexesCourt4}
+            bookedCourt4={court4BookedIndex}
+          />
 
-        <BottomSheet
-          date={date ? new Date(date as Date).toLocaleDateString('en-CA', {
-            year: 'numeric',
-            month: '2-digit',
-              day: "2-digit",
-            })
-          : ""}
-          selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
-          selectedTimeBlockIndexesCourt2={selectedTimeBlockIndexesCourt2}
-          selectedTimeBlockIndexesCourt3={selectedTimeBlockIndexesCourt3}
-          selectedTimeBlockIndexesCourt4={selectedTimeBlockIndexesCourt4}
-        />
-      </View>
+          <AdditionalServices onServicesChange={handleServicesChange} />
+        </View>
+      </ScrollView>
+
+      <BottomSheet
+        date={date ? new Date(date as Date).toLocaleDateString('en-CA', {
+          year: 'numeric',
+          month: '2-digit',
+          day: "2-digit",
+        })
+        : ""}
+        selectedTimeBlockIndexesCourt1={selectedTimeBlockIndexesCourt1}
+        selectedTimeBlockIndexesCourt2={selectedTimeBlockIndexesCourt2}
+        selectedTimeBlockIndexesCourt3={selectedTimeBlockIndexesCourt3}
+        selectedTimeBlockIndexesCourt4={selectedTimeBlockIndexesCourt4}
+        selectedServices={selectedServices}
+      />
     </GestureHandlerRootView>
   );
 };

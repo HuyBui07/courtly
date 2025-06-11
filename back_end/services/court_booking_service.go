@@ -14,13 +14,16 @@ import (
 )
 
 type BookingOrder struct {
-	CourtID   int32
-	UserID    string
-	StartTime time.Time
-	EndTime   time.Time
+	CourtID           int32
+	UserID           string
+	StartTime        time.Time
+	EndTime          time.Time
+	AdditionalServices []models.AdditionalService
+	AllowPickup      bool
 }
 
 func CreateCourtBooking(orders []BookingOrder) error {
+	fmt.Println("CreateCourtBooking")
 	collection := config.GetCollection("CourtBookings")
 	courtsCollection := config.GetCollection("Courts")
 	usersCollection := config.GetCollection("Users")
@@ -46,7 +49,8 @@ func CreateCourtBooking(orders []BookingOrder) error {
 
 		// Kiểm tra khoảng thời gian đã được book chưa
 		filter := bson.M{
-			"court_id": order.CourtID, // Dùng courtID dưới dạng string
+			"court_id": order.CourtID,
+			"state": "Booked",
 			"$or": []bson.M{
 				{"start_time": bson.M{"$lt": order.EndTime}, "end_time": bson.M{"$gt": order.StartTime}},
 			},
@@ -63,24 +67,26 @@ func CreateCourtBooking(orders []BookingOrder) error {
 
 		// Tạo booking mới
 		newBooking := models.CourtBooking{
-			CourtID:   order.CourtID,
-			UserID:    order.UserID,
-			StartTime: order.StartTime,
-			EndTime:   order.EndTime,
-			CreatedAt: time.Now(),
-			State:     "Booked",
+			CourtID:           order.CourtID,
+			UserID:           order.UserID,
+			StartTime:        order.StartTime,
+			EndTime:          order.EndTime,
+			CreatedAt:        time.Now(),
+			State:            "Booked",
+			AdditionalServices: order.AdditionalServices,
+			AllowPickup:      order.AllowPickup,
 		}
 
 		_, err = collection.InsertOne(context.TODO(), newBooking)
 		if err != nil {
-			return errors.New("failed to create booking")
+			return errors.New(err.Error())
 		}
 	}
 
 	return nil
 }
 
-func GetUserBookings(userId string) ([]models.CourtBooking, []models.CourtBooking, error) {
+func GetUserBookings(userId string) ([]models.CourtBookingResponse, []models.CourtBookingResponse, error) {
 	collection := config.GetCollection("CourtBookings")
 	filter := bson.M{"user_id": userId}
 
@@ -90,18 +96,21 @@ func GetUserBookings(userId string) ([]models.CourtBooking, []models.CourtBookin
 	}
 	defer cursor.Close(context.TODO())
 
-	var upcomingBookings []models.CourtBooking
-	var pastBookings []models.CourtBooking
+	var upcomingBookings []models.CourtBookingResponse
+	var pastBookings []models.CourtBookingResponse
 	for cursor.Next(context.TODO()) {
-		var booking models.CourtBooking
+		var booking models.CourtBookingResponse
 		if err := cursor.Decode(&booking); err != nil {
 			return nil, nil, errors.New("failed to decode booking")
 		}
 		// Convert booking times to UTC for consistent comparison
-		now := time.Now().UTC()
-		bookingStart := booking.StartTime.UTC()
+		now := time.Now().UTC().Add(7 * time.Hour)
+		bookingEnd := booking.EndTime.UTC()
 
-		if bookingStart.After(now) {
+		if bookingEnd.After(now) {
+			fmt.Println("bookingEnd: ", bookingEnd)
+			fmt.Println("now: ", now)
+
 			upcomingBookings = append(upcomingBookings, booking)
 		} else {
 			pastBookings = append(pastBookings, booking)
@@ -113,7 +122,7 @@ func GetUserBookings(userId string) ([]models.CourtBooking, []models.CourtBookin
 	return upcomingBookings, pastBookings, nil
 }
 
-func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models.CourtBooking, error) {
+func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models.CourtBookingResponse, error) {
 	collection := config.GetCollection("CourtBookings")
 
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
@@ -133,9 +142,9 @@ func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models
 	}
 	defer cursor.Close(context.TODO())
 
-	var bookings []models.CourtBooking
+	var bookings []models.CourtBookingResponse
 	for cursor.Next(context.TODO()) {
-		var booking models.CourtBooking
+		var booking models.CourtBookingResponse
 		if err := cursor.Decode(&booking); err != nil {
 			return nil, errors.New("failed to decode booking")
 		}
@@ -145,7 +154,7 @@ func GetBookingsForCourtOnSpecificDate(courtID string, date time.Time) ([]models
 	return bookings, nil
 }
 
-func GetAllBookingsOnASpecificDate(date time.Time) ([]models.CourtBooking, error) {
+func GetAllBookingsOnASpecificDate(date time.Time) ([]models.CourtBookingResponse, error) {
 	collection := config.GetCollection("CourtBookings")
 
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
@@ -162,9 +171,9 @@ func GetAllBookingsOnASpecificDate(date time.Time) ([]models.CourtBooking, error
 	}
 	defer cursor.Close(context.TODO())
 
-	var bookings []models.CourtBooking
+	var bookings []models.CourtBookingResponse
 	for cursor.Next(context.TODO()) {
-		var booking models.CourtBooking
+		var booking models.CourtBookingResponse
 		if err := cursor.Decode(&booking); err != nil {
 			return nil, errors.New("failed to decode booking")
 		}
@@ -174,7 +183,7 @@ func GetAllBookingsOnASpecificDate(date time.Time) ([]models.CourtBooking, error
 	return bookings, nil
 }
 
-func GetUserBookingsByDate(token, dateStr string) ([]models.CourtBooking, error) {
+func GetUserBookingsByDate(token, dateStr string) ([]models.CourtBookingResponse, error) {
 	user, err := GetUserDataByToken(token)
 	if err != nil {
 		return nil, errors.New("unauthorized")
@@ -200,9 +209,9 @@ func GetUserBookingsByDate(token, dateStr string) ([]models.CourtBooking, error)
 	}
 	defer cursor.Close(context.TODO())
 
-	var bookings []models.CourtBooking
+	var bookings []models.CourtBookingResponse
 	for cursor.Next(context.TODO()) {
-		var b models.CourtBooking
+		var b models.CourtBookingResponse
 		if err := cursor.Decode(&b); err == nil {
 			bookings = append(bookings, b)
 		}
@@ -211,7 +220,7 @@ func GetUserBookingsByDate(token, dateStr string) ([]models.CourtBooking, error)
 	return bookings, nil
 }
 
-func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBooking, error) {
+func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBookingResponse, error) {
 	user, err := GetUserDataByToken(token)
 	if err != nil {
 		return nil, errors.New("unauthorized")
@@ -237,9 +246,9 @@ func GetUserBookingsByMonth(token, monthStr string) ([]models.CourtBooking, erro
 	}
 	defer cursor.Close(context.TODO())
 
-	var bookings []models.CourtBooking
+	var bookings []models.CourtBookingResponse
 	for cursor.Next(context.TODO()) {
-		var b models.CourtBooking
+		var b models.CourtBookingResponse
 		if err := cursor.Decode(&b); err == nil {
 			bookings = append(bookings, b)
 		}
@@ -319,5 +328,48 @@ func DeleteBookingsOfCourtInMonth(courtID string, year int, month int) error {
 	}
 
 	_, err = collection.DeleteMany(context.TODO(), filter)
+	return err
+}
+func CancelBookingByID(bookingID string, userID string) error {
+	collection := config.GetCollection("CourtBookings")
+
+	bookingObjID, err := primitive.ObjectIDFromHex(bookingID)
+	if err != nil {
+		return errors.New("invalid booking ID format")
+	}
+
+	// Check if booking exists and belongs to user
+	var booking models.CourtBooking
+	filter := bson.M{"_id": bookingObjID}
+	err = collection.FindOne(context.TODO(), filter).Decode(&booking)
+	if err != nil {
+		return errors.New("booking not found")
+	}
+
+	if booking.UserID != userID {
+		return errors.New("permission denied - booking belongs to different user")
+	}
+
+	_, err = collection.UpdateOne(context.TODO(), filter, bson.M{"$set": bson.M{"state": "Cancelled"}})
+	if err != nil {
+		return errors.New("failed to cancel booking")
+	}
+
+	pickupCollection := config.GetCollection("Pickups")
+	_, err = pickupCollection.DeleteOne(context.TODO(), bson.M{"court_booking_id": bookingID})
+	if err != nil {
+		return errors.New("failed to remove associated pickup")
+	}
+
+	return nil
+}
+
+func PostUnpaidBooking(unpaidBooking models.UnpaidBooking) error {
+	collection := config.GetCollection("UnpaidBookings")
+	
+	// Generate a new ObjectID
+	unpaidBooking.ID = primitive.NewObjectID()
+	
+	_, err := collection.InsertOne(context.TODO(), unpaidBooking)
 	return err
 }

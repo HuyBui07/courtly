@@ -10,7 +10,11 @@ export default function RootLayout() {
   console.log("segments", segments);
 
   const hideTabBar = segments.some(
-    (segment) => segment === "book-court" || segment === "check-out"
+    (segment) =>
+      segment === "book-court" ||
+      segment === "check-out" ||
+      segment === "tournament" ||
+      segment === "notifications"
   );
 
   return (
@@ -111,6 +115,16 @@ export default function RootLayout() {
           tabBarIcon: ({ color }) => (
             <FontAwesome size={28} name="user" color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+          tabBarStyle: {
+            display: "none",
+          },
+          animation: "shift",
         }}
       />
     </Tabs>

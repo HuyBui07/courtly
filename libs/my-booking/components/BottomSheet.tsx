@@ -8,7 +8,7 @@ import Animated, {
   interpolate,
   runOnJS,
 } from "react-native-reanimated";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import React, { useState, useCallback, useEffect } from "react";
 
 import { colors } from "@/libs/commons/design-system/colors";
@@ -19,18 +19,27 @@ import { formatDate } from "@/libs/commons/utils";
 import { BookingService } from "../services/BookingService";
 import { useBookCourt } from "../hooks/mutations/useBookCourt";
 
+const services = {
+  water: { name: "Water Bottle", price: 10000 },
+  soda: { name: "Soda", price: 15000 },
+  shuttlecock: { name: "Shuttlecock", price: 50000 },
+  towel: { name: "Towel", price: 20000 },
+};
+
 const BottomSheet = ({
   date,
   selectedTimeBlockIndexesCourt1,
   selectedTimeBlockIndexesCourt2,
   selectedTimeBlockIndexesCourt3,
   selectedTimeBlockIndexesCourt4,
+  selectedServices,
 }: {
   date?: string;
   selectedTimeBlockIndexesCourt1: number[];
   selectedTimeBlockIndexesCourt2: number[];
   selectedTimeBlockIndexesCourt3: number[];
   selectedTimeBlockIndexesCourt4: number[];
+  selectedServices: { [key: string]: number };
 }) => {
   const { mutate: bookCourt } = useBookCourt();
   const [isExtended, setIsExtended] = useState(false);
@@ -41,6 +50,18 @@ const BottomSheet = ({
     selectedTimeBlockIndexesCourt2.length +
     selectedTimeBlockIndexesCourt3.length +
     selectedTimeBlockIndexesCourt4.length;
+
+  const courtPrice = totalHours * 80000;
+  const servicesPrice = Object.entries(selectedServices).reduce(
+    (total, [serviceId, quantity]) => {
+      return (
+        total +
+        (services[serviceId as keyof typeof services]?.price || 0) * quantity
+      );
+    },
+    0
+  );
+  const totalPrice = courtPrice + servicesPrice;
 
   const gesture = Gesture.Pan().onEnd((event) => {
     if (event.translationY > 0 && height.value > 120) {
@@ -53,13 +74,22 @@ const BottomSheet = ({
     if (isExtended) {
       console.log("Checkout");
       // Process data
-      let bookingOrder: BookingOrder[] = [];
+      let bookingOrder: BookingOrder = {
+        courts: [],
+        additional_services: [],
+        total_price: 0,
+      };
       const createBookingOrder = (
         courtId: number,
         selectedTimeBlocks: number[]
-      ) => {
+      ): {
+        court_id: number;
+        start_time: string;
+        end_time: string;
+      } | null => {
         if (selectedTimeBlocks.length === 0) return null;
         const sortedBlocks = [...selectedTimeBlocks].sort((a, b) => a - b);
+        console.log(selectedServices);
         return {
           court_id: courtId,
           start_time: `${date}T${timeBlocks[sortedBlocks[0]]}:00Z`,
@@ -76,10 +106,34 @@ const BottomSheet = ({
         { id: 4, blocks: selectedTimeBlockIndexesCourt4 },
       ];
 
-      bookingOrder = courts
+      bookingOrder.courts = courts
         .map((court) => createBookingOrder(court.id, court.blocks))
-        .filter((order): order is BookingOrder => order !== null);
-      bookCourt(bookingOrder);
+        .filter(
+          (
+            order
+          ): order is {
+            court_id: number;
+            start_time: string;
+            end_time: string;
+            allow_pickup: boolean;
+          } => order !== null
+        );
+
+      const additionalServices = Object.entries(selectedServices).map(
+        ([serviceId, quantity]) => ({
+          service_id: serviceId,
+          quantity,
+        })
+      );
+      bookingOrder.additional_services = additionalServices;
+      bookingOrder.total_price = totalPrice;
+      router.replace({
+        pathname: "/(protected)/booking/check-out",
+        params: {
+          bookingOrder: JSON.stringify(bookingOrder),
+        },
+      });
+      // bookCourt(bookingOrder);
       return;
     }
 
@@ -111,8 +165,7 @@ const BottomSheet = ({
           <View style={styles.infoContainer}>
             <Text style={styles.text}>Total hours: {totalHours}h</Text>
             <Text style={styles.text}>
-              Price: {totalHours * 80}
-              {totalHours !== 0 && ".000"} VND
+              Price: {totalPrice.toLocaleString("vi-VN")} VND
             </Text>
           </View>
 
@@ -172,6 +225,19 @@ const BottomSheet = ({
                   )
                   .join(", ")}
               </Text>
+            )}
+            {Object.entries(selectedServices).length > 0 && (
+              <View style={styles.servicesContainer}>
+                <Text style={styles.text}>Additional Services:</Text>
+                {Object.entries(selectedServices).map(
+                  ([serviceId, quantity]) => (
+                    <Text key={serviceId} style={styles.text}>
+                      {services[serviceId as keyof typeof services]?.name}:{" "}
+                      {quantity}x
+                    </Text>
+                  )
+                )}
+              </View>
             )}
           </Animated.View>
 
@@ -250,6 +316,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     position: "absolute",
     bottom: 16,
+  },
+
+  servicesContainer: {
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.2)",
+    paddingTop: 8,
   },
 });
 

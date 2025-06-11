@@ -1,6 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
 import { BookingService } from "../../services/BookingService";
-import { BookingOrder } from "../../types/BookingOrder";
 import { queryClient } from "@/libs/commons/utils";
 import { NotificationModalController } from "@/libs/commons/stores/useNotificationModalStore";
 import { router } from "expo-router";

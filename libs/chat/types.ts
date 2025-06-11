@@ -1,9 +1,9 @@
 import { User } from '../auth/types';
 
 export interface IMessage {
-  _id: string | number;
+  _id: string;
   text: string;
-  createdAt: Date | number;
-  user: User;
+  email: string;
+  timestamp?: number;
 }
 

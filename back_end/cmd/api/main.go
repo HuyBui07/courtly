@@ -7,6 +7,7 @@ import (
 
 	"back_end/config"
 	"back_end/routes"
+	"back_end/services"
 
 	"github.com/payOSHQ/payos-lib-golang"
 )
@@ -17,6 +18,9 @@ func init() {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 	fmt.Println("Successfully connected to BCM!")
+
+	services.StartScheduler()
+
 }
 
 func main() {

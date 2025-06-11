@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"back_end/models"
 	"back_end/services"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,75 @@ type CreateTournamentRequest struct {
 	Scale       int      `json:"scale"`
 }
 
+type TournamentWithRegistration struct {
+	ID          string    `json:"_id"`
+	TourID      string    `json:"tour_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Poster      string    `json:"poster"`
+	Type        string    `json:"type"`
+	Athletes    []models.TournamentAthlete  `json:"athletes"`
+	Deadline    time.Time `json:"deadline"`
+	Period      []time.Time `json:"period"`
+	Scale       int       `json:"scale"`
+	Price       int32     `json:"price"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	IsRegister  bool      `json:"is_register"`
+}
+
+func GetAllTournamentsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	user, err := services.GetUserDataByToken(token)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
+	tournaments, err := services.GetAllTournaments()
+	if err != nil {
+		http.Error(w, "Failed to get tournaments", http.StatusInternalServerError)
+		return
+	}
+
+	var response []TournamentWithRegistration
+
+	// Add isRegistered field for each tournament
+	for i := range tournaments {
+		isRegistered := false
+		for _, athlete := range tournaments[i].Athletes {
+			if athlete.UserID == user.User_id {
+				isRegistered = true
+				break
+			}
+		}
+		response = append(response, TournamentWithRegistration{
+			ID:          tournaments[i].ID.Hex(),
+			TourID:      tournaments[i].TourID,
+			Name:        tournaments[i].Name,
+			Description: tournaments[i].Description,
+			Poster:      tournaments[i].Poster,
+			Type:        tournaments[i].Type,
+			Athletes:    tournaments[i].Athletes,
+			Deadline:    tournaments[i].Deadline,
+			Period:      tournaments[i].Period,
+			Scale:       tournaments[i].Scale,
+			Price:       tournaments[i].Price,
+			CreatedAt:   tournaments[i].CreatedAt,
+			UpdatedAt:   tournaments[i].UpdatedAt,
+			IsRegister:  isRegistered,
+		})
+	}
+
+	w.Header().Set("Content-Type", "application/json")	
+	json.NewEncoder(w).Encode(response)
+}
+
 func CreateTournamentHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -32,6 +102,7 @@ func CreateTournamentHandler(w http.ResponseWriter, r *http.Request) {
 		Deadline    string   `json:"deadline"` // "2025-07-01"
 		Period      []string `json:"period"`   // ["2025-07-10", "2025-07-15"]
 		Scale       int      `json:"scale"`
+		Price       int32  `json:"price"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -67,7 +138,7 @@ func CreateTournamentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = services.CreateTournament(req.Name, req.Description, req.Poster, req.Type, deadline, period, req.Scale)
+	err = services.CreateTournament(req.Name, req.Description, req.Poster, req.Type, deadline, period, req.Scale, req.Price)
 	if err != nil {
 		http.Error(w, "Failed to create tournament: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -77,21 +148,15 @@ func CreateTournamentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Tournament created successfully"))
 }
 
-type RegisterTournamentRequest struct {
-	TourID    string `json:"tour_id"`
-	Athlete1  string `json:"athlete_1"`
-	Athlete2  string `json:"athlete_2,omitempty"` // optional for singles
-}
-
 func RegisterTournamentHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req RegisterTournamentRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+	tourID := r.URL.Query().Get("tour_id")
+	if tourID == "" {
+		http.Error(w, "Missing tournament ID", http.StatusBadRequest)
 		return
 	}
 
@@ -109,7 +174,7 @@ func RegisterTournamentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Thực hiện đăng ký
-	err = services.RegisterToTournament(user.ID.Hex(), req.TourID, req.Athlete1, req.Athlete2)
+	err = services.RegisterToTournament(tourID, user.User_id, *user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

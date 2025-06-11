@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Pressable, StyleSheet, type ViewStyle } from "react-native";
-import Animated, { BounceIn, BounceOut } from "react-native-reanimated";
+import Animated, { BounceIn, BounceOut, Easing, LinearTransition } from "react-native-reanimated";
 
 interface GlobalModalProps {
   containerStyle?: ViewStyle;
@@ -14,27 +14,31 @@ interface GlobalModalProps {
   exitingDuration?: number;
 }
 
-const GLOBAL_MODAL_Z_INDEX = 10000;
+const GLOBAL_MODAL_Z_INDEX = 9998;
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 const Modal: React.FC<GlobalModalProps> = (props) => {
   const enteringDuration = props.enteringDuration ?? 600;
   const exitingDuration = props.exitingDuration ?? 400;
 
   return (
-    props.isVisible && (
-      <Pressable
+    props.isVisible && (  
+      <AnimatedPressable
+        layout={LinearTransition.easing(Easing.linear)}
         onPress={props.onBackdropPress}
         onStartShouldSetResponder={() => false}
-        style={[styles.backdrop]}
+        style={[styles.backdrop]} 
       >
         <Animated.View
           entering={props.entering ?? BounceIn.duration(enteringDuration)}
           exiting={props.exiting ?? BounceOut.duration(exitingDuration)}
           style={[styles.container, props.containerStyle]}
+          onStartShouldSetResponder={() => true}
         >
           {props.children}
         </Animated.View>
-      </Pressable>
+      </AnimatedPressable>
     )
   );
 };

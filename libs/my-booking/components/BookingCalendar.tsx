@@ -11,6 +11,7 @@ import { textStyles } from "@/libs/commons/design-system/styles";
 import { timeBlocks } from "../constants";
 
 const BookingCalendar = ({
+  isToday,
   selectedTimeBlockIndexesCourt1,
   selectedTimeBlockIndexesCourt2,
   selectedTimeBlockIndexesCourt3,
@@ -24,6 +25,7 @@ const BookingCalendar = ({
   bookedCourt3,
   bookedCourt4,
 }: {
+  isToday: boolean;
   selectedTimeBlockIndexesCourt1: number[];
   selectedTimeBlockIndexesCourt2: number[];
   selectedTimeBlockIndexesCourt3: number[];
@@ -45,6 +47,7 @@ const BookingCalendar = ({
   bookedCourt3: number[];
   bookedCourt4: number[];
 }) => {
+  console.log("isToday: ", isToday);
   const courts = [
     { name: "Court 1" },
     { name: "Court 2" },
@@ -118,7 +121,10 @@ const BookingCalendar = ({
               }}
             ></View>
             {timeBlocks.map((time, index) => {
-              if (disabledTimeIndexes.includes(index)) {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
+              if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
               return (
@@ -174,7 +180,10 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
-              if (disabledTimeIndexes.includes(index)) {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
+              if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
               return (
@@ -191,7 +200,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(1, index)}
                   disabled={
                     bookedCourt1?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -202,7 +211,10 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
-              if (disabledTimeIndexes.includes(index)) {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
+              if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
               return (
@@ -219,7 +231,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(2, index)}
                   disabled={
                     bookedCourt2?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -230,7 +242,10 @@ const BookingCalendar = ({
           <View style={styles.calendarRow}>
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
-              if (disabledTimeIndexes.includes(index)) {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
+              if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
               return (
@@ -247,7 +262,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(3, index)}
                   disabled={
                     bookedCourt3?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );
@@ -255,10 +270,13 @@ const BookingCalendar = ({
           </View>
 
           {/* Court 4 */}
-          <View style={styles.calendarRow}>
+          <View style={styles.calendarRow}> 
             <View style={styles.limitBlock}></View>
             {timeBlocks.map((_, index) => {
-              if (disabledTimeIndexes.includes(index)) {
+              if (index === timeBlocks.length - 1) {
+                return;
+              }
+              if (disabledTimeIndexes.includes(index) && isToday) {
                 return;
               }
               return (
@@ -275,7 +293,7 @@ const BookingCalendar = ({
                   onPress={() => handleTimeBlockPress(4, index)}
                   disabled={
                     bookedCourt4?.includes(index) ||
-                    disabledTimeIndexes.includes(index)
+                    (disabledTimeIndexes.includes(index) && isToday)
                   }
                 ></TouchableOpacity>
               );

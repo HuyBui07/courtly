@@ -1,3 +1,145 @@
+# Courtly
+
+A modern mobile application built with React Native and Expo, featuring real-time chat functionality and Firebase integration.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+- Node.js (v18 or higher)
+- npm or yarn
+- Expo CLI (`npm install -g expo-cli`)
+- iOS Simulator (for Mac users) or Android Studio (for Android development)
+- Firebase account
+
+## Getting Started
+
+1. **Clone the repository**
+   ```bash
+   git clone [your-repository-url]
+   cd courtly
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Firebase Setup**
+   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com)
+   - Enable Realtime Database
+   - Set up Firebase Authentication
+   - Configure your database rules:
+   ```json
+   {
+     "rules": {
+       ".read": "true",
+       ".write": "false"
+     }
+   }
+   ```
+
+4. **Environment Configuration**
+   Create a `.env` file in the root directory with your Firebase configuration:
+   ```
+   FIREBASE_API_KEY=your_api_key
+   FIREBASE_AUTH_DOMAIN=your_auth_domain
+   FIREBASE_DATABASE_URL=your_database_url
+   FIREBASE_PROJECT_ID=your_project_id
+   FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   FIREBASE_APP_ID=your_app_id
+   ```
+
+5. **Start the development server**
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+6. **Run on your device or simulator**
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Scan QR code with Expo Go app for physical device
+
+## Project Structure
+
+```
+courtly/
+├── app/                    # Main application code
+│   ├── (protected)/       # Protected routes
+│   └── (public)/          # Public routes
+├── assets/                # Static assets
+├── libs/                  # Shared libraries and utilities
+│   ├── chat/             # Chat-related components
+│   ├── commons/          # Common utilities
+│   └── storage/          # Storage utilities
+├── back_end/             # Backend services
+└── scripts/              # Build and utility scripts
+```
+
+## Available Scripts
+
+- `npm start` - Start the Expo development server
+- `npm run android` - Run on Android device/emulator
+- `npm run ios` - Run on iOS simulator
+- `npm run web` - Run in web browser
+- `npm run reset-project` - Reset project configuration
+- `npm test` - Run tests
+- `npm run lint` - Run linting
+
+## Dependencies
+
+### Core Dependencies
+- React Native
+- Expo
+- Firebase
+- React Navigation
+- React Query
+- Zustand (State Management)
+- React Native Paper (UI Components)
+
+### Development Dependencies
+- TypeScript
+- Jest
+- Babel
+
+## Features
+
+- Real-time chat functionality
+- Firebase Authentication
+- Secure data storage
+- Modern UI with React Native Paper
+- Type-safe development with TypeScript
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Firebase Connection Issues**
+   - Verify your Firebase configuration
+   - Check your internet connection
+   - Ensure Firebase services are enabled
+
+2. **Build Errors**
+   - Clear metro bundler cache: `expo start -c`
+   - Reset project: `npm run reset-project`
+   - Check for conflicting dependencies
+
+3. **iOS/Android Specific Issues**
+   - For iOS: Ensure Xcode is properly configured
+   - For Android: Check Android SDK installation
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, email [your-email] or open an issue in the repository.
+
 # Welcome to your Expo app 👋 (Front End)
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
