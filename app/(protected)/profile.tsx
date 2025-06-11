@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { queryClient } from "@/libs/commons/utils";
 import { TokenManager } from "@/libs/store/persistStore";
 import { useNotifications } from "@/libs/store/useNotifications";
+import { useGetPersonalData } from "@/libs/commons/hooks/useGetPersonalData";
 
 const profileOptions = [
   { icon: "account", label: "Account" },
@@ -18,6 +19,8 @@ const profileOptions = [
 
 const ProfileScreen = () => {
   const theme = useTheme();
+  const { data: user } = useGetPersonalData();
+  const name = user?.email.split("@")[0];
 
   const handleLogout = async () => {
     queryClient.clear();
@@ -37,10 +40,10 @@ const ProfileScreen = () => {
         />
         <View style={{ marginLeft: 12 }}>
           <Text variant="titleMedium" style={styles.nameText}>
-            Surendhar
+            {name}
           </Text>
           <Text variant="bodySmall" style={styles.emailText}>
-            surendharpv01@gmail.com
+            {user?.email}
           </Text>
         </View>
       </View>

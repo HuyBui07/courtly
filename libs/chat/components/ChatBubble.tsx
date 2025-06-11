@@ -13,17 +13,18 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({
   message,
   isOwnMessage,
 }) => {
-  console.log(isOwnMessage);
   return (
     <View style={styles.container}>
-      <Text
-        style={[
-          styles.emailText,
-          { alignSelf: isOwnMessage ? "flex-end" : "flex-start" },
-        ]}
-      >
-        {email}
-      </Text>
+      {!isOwnMessage && (
+        <Text
+          style={[
+            styles.emailText,
+            { alignSelf: isOwnMessage ? "flex-end" : "flex-start" },
+          ]}
+        >
+          {email}
+        </Text>
+      )}
       <View
         style={[
           styles.bubble,

@@ -10,6 +10,7 @@ import { memo } from "react";
 
 const PickupView = (pickup: PickupModel) => {
   const { data: userInfo } = useGetUserInfo(pickup.user_id);
+  const name = userInfo?.split("@")[0];
   return (
     <TouchableOpacity
       onPress={() => PickupDetailsModalController.show(pickup)}
@@ -17,11 +18,11 @@ const PickupView = (pickup: PickupModel) => {
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <Image
-          source={{ uri: "https://randomuser.me/api/portraits/men/75.jpg" }}
+          source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
           style={styles.avatar}
         />
         <Text style={{ ...textStyles.body, fontWeight: "bold" }}>
-          {userInfo?.name}
+          {name}
         </Text>
       </View>
 

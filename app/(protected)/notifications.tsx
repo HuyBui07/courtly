@@ -1,11 +1,7 @@
 // screens/NotificationsScreen.tsx
 
 import React, { useState } from "react";
-import {
-  View,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, FlatList, TouchableOpacity } from "react-native";
 import { Text, useTheme, Avatar } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -19,14 +15,21 @@ const NotificationsScreen = () => {
   const { notifications } = useNotifications() as any;
 
   const renderItem = ({ item }: { item: any }) => (
-    <View
+    <TouchableOpacity
+      onPress={() => {
+        router.push(`/booking`);
+      }}
       style={{
         flexDirection: "row",
         alignItems: "flex-start",
         paddingVertical: 12,
       }}
     >
-      <Avatar.Icon size={40} icon="bell" style={{ backgroundColor: theme.colors.primary }} />
+      <Avatar.Icon
+        size={40}
+        icon="bell"
+        style={{ backgroundColor: theme.colors.primary }}
+      />
       <View style={{ marginLeft: 12, flex: 1 }}>
         <Text variant="bodyLarge" style={{ fontWeight: "bold" }}>
           {item.title}
@@ -35,13 +38,15 @@ const NotificationsScreen = () => {
           {item.body}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: "#fff" }}>
       {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
+      <View
+        style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}
+      >
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
@@ -60,7 +65,8 @@ const NotificationsScreen = () => {
             key={tab}
             onPress={() => setActiveTab(tab)}
             style={{
-              backgroundColor: activeTab === tab ? theme.colors.primary : "#f0f0f0",
+              backgroundColor:
+                activeTab === tab ? theme.colors.primary : "#f0f0f0",
               paddingHorizontal: 16,
               paddingVertical: 8,
               borderRadius: 8,

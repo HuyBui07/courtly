@@ -67,7 +67,7 @@ func checkUpcomingBookings() {
 	// Set notification timers for each booking
 	for _, booking := range bookings {
 		fmt.Println("Booking: ", booking.ID)
-		notificationTime := booking.StartTime.Add(-52 * time.Minute)
+		notificationTime := booking.StartTime.Add(-94 * time.Minute)
 		if notificationTime.After(now) {
 			go scheduleNotification(booking, notificationTime.Sub(now))
 		}

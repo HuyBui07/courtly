@@ -1,27 +1,36 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { StyleSheet, View, Keyboard, FlatList } from "react-native";
 import { TextInput } from "react-native-paper";
 import ChatBubble from "@/libs/chat/components/ChatBubble";
 import { IMessage } from "@/libs/chat/types";
 import { firebase } from "@react-native-firebase/database";
 import { useGetPersonalData } from "@/libs/commons/hooks/useGetPersonalData";
+import { LoadingStateController } from "@/libs/commons/stores/useLoadingState";
+
+const messagesRef = firebase
+  .app()
+  .database(
+    "https://courtly-5e320-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  )
+  .ref();
 
 const Chat = () => {
   const [keyboardOffset, setKeyboardOffset] = useState(80);
   const [text, setText] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const { data: personalData } = useGetPersonalData();
-  const messagesRef = firebase
-    .app()
-    .database(
-      "https://courtly-5e320-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    )
-    .ref();
+  const flatListRef = useRef<FlatList>(null);
+  const { setLoading } = LoadingStateController;
 
   useEffect(() => {
+    setLoading(true);
     // Keyboard listeners
     const showListener = Keyboard.addListener("keyboardDidShow", () => {
       setKeyboardOffset(10);
+      // Scroll to bottom when keyboard shows
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     });
     const hideListener = Keyboard.addListener("keyboardDidHide", () => {
       setKeyboardOffset(80);
@@ -40,8 +49,13 @@ const Chat = () => {
               ...value,
             };
           }
-        ).reverse();
-        setMessages(messagesArray);
+        );
+        setMessages(messagesArray.reverse());
+        // Scroll to bottom when keyboard shows
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+          setLoading(false);
+        }, 500);
       }
     });
 
@@ -71,6 +85,8 @@ const Chat = () => {
   return (
     <View style={styles.container}>
       <FlatList
+        style={{ flex: 1 }}
+        ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
@@ -81,6 +97,7 @@ const Chat = () => {
           />
         )}
         inverted={false}
+        showsVerticalScrollIndicator={false}
       />
 
       <TextInput
