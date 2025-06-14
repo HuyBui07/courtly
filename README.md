@@ -10,6 +10,11 @@ Before you begin, ensure you have the following installed:
 - Expo CLI (`npm install -g expo-cli`)
 - iOS Simulator (for Mac users) or Android Studio (for Android development)
 - Firebase account
+- Firebase Admin SDK Setup
+   1. Go to Firebase Console > Project Settings > Service Accounts
+   2. Click "Generate New Private Key"
+   3. Save the downloaded JSON file as `admin-sdk.json`
+   4. Place the file in the `back_end` directory
 
 ## Getting Started
 
