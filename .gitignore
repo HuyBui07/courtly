@@ -39,3 +39,6 @@ app-example
 
 # Android
 android/
+
+#Firebase Admin SDK
+backend/admin-sdk.json
